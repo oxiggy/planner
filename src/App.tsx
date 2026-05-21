@@ -10,7 +10,7 @@ import { Toolbar } from './components/Toolbar'
 import { Sidebar } from './components/Sidebar'
 import { DayGrid } from './components/DayGrid'
 import { useStore } from './store'
-import { MIN_HEIGHT } from './lib/constants'
+import { MIN_HEIGHT, getVisibleStartMin } from './lib/constants'
 import { snapToSlot } from './lib/time'
 
 function getEventClientY(e: Event | undefined): number | null {
@@ -43,12 +43,13 @@ function computeTarget(event: DragMoveEvent | DragEndEvent): Target | null {
     | { type?: string; blockId?: string; templateId?: string }
     | undefined
   const state = useStore.getState()
+  const visibleStartMin = getVisibleStartMin(state.settings.showAllHours)
 
   if (activeData?.type === 'template' && activeData.templateId) {
     const tpl = state.templates.find((t) => t.id === activeData.templateId)
     if (!tpl) return null
     const localY = dropY - overRect.top
-    const startMin = snapToSlot(localY / MIN_HEIGHT)
+    const startMin = snapToSlot(localY / MIN_HEIGHT) + visibleStartMin
     return { date: overData.date, startMin, durationMin: tpl.durationMin }
   }
 
@@ -60,7 +61,7 @@ function computeTarget(event: DragMoveEvent | DragEndEvent): Target | null {
     const pointerOffsetY = startY - initial.top
     const newBlockTopY = dropY - pointerOffsetY
     const localY = newBlockTopY - overRect.top
-    const startMin = snapToSlot(localY / MIN_HEIGHT)
+    const startMin = snapToSlot(localY / MIN_HEIGHT) + visibleStartMin
     return {
       date: overData.date,
       startMin,

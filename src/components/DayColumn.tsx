@@ -6,6 +6,8 @@ import {
   HEADER_HEIGHT,
   HOUR_HEIGHT,
   MIN_HEIGHT,
+  VISIBLE_END_HOUR,
+  getVisibleStartMin,
 } from '@/lib/constants'
 import { formatDayHeader, formatHM, isToday } from '@/lib/time'
 import { ScheduledBlock } from './ScheduledBlock'
@@ -15,6 +17,12 @@ type Props = { date: string }
 
 export function DayColumn({ date }: Props) {
   const scheduled = useStore((s) => s.scheduled)
+  const showAllHours = useStore((s) => s.settings.showAllHours)
+  const visibleStartMin = getVisibleStartMin(showAllHours)
+  const visibleStartHour = visibleStartMin / 60
+  const hoursCount = VISIBLE_END_HOUR - visibleStartHour
+  const dayHeight = hoursCount * HOUR_HEIGHT
+
   const blocks = useMemo(
     () => scheduled.filter((b) => b.date === date).sort((a, b) => a.startMin - b.startMin),
     [scheduled, date],
@@ -41,32 +49,37 @@ export function DayColumn({ date }: Props) {
       </div>
       <div
         ref={setNodeRef}
-        className={cn('relative', isOver && 'bg-sky-50/40')}
-        style={{ height: 24 * HOUR_HEIGHT }}
+        className={cn('relative overflow-hidden', isOver && 'bg-sky-50/40')}
+        style={{ height: dayHeight }}
       >
-        {Array.from({ length: 24 }).map((_, h) => (
-          <div key={`h-${h}`}>
+        {Array.from({ length: hoursCount }).map((_, i) => (
+          <div key={`h-${i}`}>
             <div
               className="pointer-events-none absolute left-0 right-0 border-t border-slate-200"
-              style={{ top: h * HOUR_HEIGHT }}
+              style={{ top: i * HOUR_HEIGHT }}
             />
             <div
               className="pointer-events-none absolute left-0 right-0 border-t border-dashed border-slate-200/80"
-              style={{ top: h * HOUR_HEIGHT + HOUR_HEIGHT / 2 }}
+              style={{ top: i * HOUR_HEIGHT + HOUR_HEIGHT / 2 }}
             />
           </div>
         ))}
-        {today && <NowLine />}
-        <DropGhost date={date} />
+        {today && <NowLine visibleStartMin={visibleStartMin} />}
+        <DropGhost date={date} visibleStartMin={visibleStartMin} />
         {blocks.map((b, i) => (
-          <ScheduledBlock key={b.id} block={b} stackIndex={i} />
+          <ScheduledBlock
+            key={b.id}
+            block={b}
+            stackIndex={i}
+            visibleStartMin={visibleStartMin}
+          />
         ))}
       </div>
     </div>
   )
 }
 
-function DropGhost({ date }: { date: string }) {
+function DropGhost({ date, visibleStartMin }: { date: string; visibleStartMin: number }) {
   const preview = useStore((s) =>
     s.dragPreview && s.dragPreview.date === date ? s.dragPreview : null,
   )
@@ -75,7 +88,7 @@ function DropGhost({ date }: { date: string }) {
     <div
       className="pointer-events-none absolute left-1 right-1 z-[60] rounded-md border-2 border-dashed border-sky-500/70 bg-sky-500/15"
       style={{
-        top: preview.startMin * MIN_HEIGHT,
+        top: (preview.startMin - visibleStartMin) * MIN_HEIGHT,
         height: preview.durationMin * MIN_HEIGHT,
       }}
     >
@@ -86,13 +99,13 @@ function DropGhost({ date }: { date: string }) {
   )
 }
 
-function NowLine() {
+function NowLine({ visibleStartMin }: { visibleStartMin: number }) {
   const now = new Date()
   const min = now.getHours() * 60 + now.getMinutes()
   return (
     <div
       className="pointer-events-none absolute left-0 right-0 z-10"
-      style={{ top: min * MIN_HEIGHT }}
+      style={{ top: (min - visibleStartMin) * MIN_HEIGHT }}
     >
       <div className="h-px bg-red-500" />
     </div>

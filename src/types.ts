@@ -23,6 +23,7 @@ export type ScheduledTask = {
 
 export type Settings = {
   preventOverlap: boolean
+  showAllHours: boolean
 }
 
 export type PlannerState = {

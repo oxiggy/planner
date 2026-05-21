@@ -14,9 +14,10 @@ import { useRef, useState } from 'react'
 type Props = {
   block: ScheduledTask
   stackIndex: number
+  visibleStartMin: number
 }
 
-export function ScheduledBlock({ block, stackIndex }: Props) {
+export function ScheduledBlock({ block, stackIndex, visibleStartMin }: Props) {
   const [hovered, setHovered] = useState(false)
   const updateScheduled = useStore((s) => s.updateScheduled)
   const deleteScheduled = useStore((s) => s.deleteScheduled)
@@ -65,7 +66,7 @@ export function ScheduledBlock({ block, stackIndex }: Props) {
       onPointerLeave={() => setHovered(false)}
       style={{
         position: 'absolute',
-        top: block.startMin * MIN_HEIGHT,
+        top: (block.startMin - visibleStartMin) * MIN_HEIGHT,
         height: heightPx,
         left: 2,
         right: 2,

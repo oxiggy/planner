@@ -18,6 +18,7 @@ type Store = PlannerState & {
   setStartDate: (s: string) => void
   setDayCount: (n: number) => void
   setPreventOverlap: (b: boolean) => void
+  setShowAllHours: (b: boolean) => void
 
   addTemplate: (init?: Partial<Task>) => Task
   updateTemplate: (id: string, patch: Partial<Task>) => void
@@ -63,7 +64,7 @@ function defaultState(): PlannerState {
     dayCount: 7,
     templates: [],
     scheduled: [],
-    settings: { preventOverlap: false },
+    settings: { preventOverlap: false, showAllHours: false },
   }
 }
 
@@ -110,6 +111,10 @@ export const useStore = create<Store>((set, get) => {
     },
     setPreventOverlap(b) {
       set((state) => ({ settings: { ...state.settings, preventOverlap: b } }))
+      persist()
+    },
+    setShowAllHours(b) {
+      set((state) => ({ settings: { ...state.settings, showAllHours: b } }))
       persist()
     },
 
