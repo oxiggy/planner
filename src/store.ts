@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import type { PlannerState, ScheduledTask, Task, Theme } from './types'
-import { DEFAULT_COLOR } from './lib/constants'
+import { DEFAULT_COLOR, DEFAULT_SLOT_COLOR } from './lib/constants'
 import { loadState, saveState } from './lib/storage'
 import { uid } from './lib/utils'
 import { snapToSlot, todayStr } from './lib/time'
@@ -44,7 +44,7 @@ type Store = PlannerState & {
   importTemplates: (templates: Task[]) => void
   importPlanner: (p: { startDate: string; dayCount: number; scheduled: ScheduledTask[] }) => void
 
-  addSlotToToday: () => void
+  addSlotToToday: (durationMin?: number) => void
 }
 
 function conflictsWith(
@@ -297,9 +297,9 @@ export const useStore = create<Store>((set, get) => {
       persist()
     },
 
-    addSlotToToday() {
+    addSlotToToday(durationMin = 60) {
       const today = todayStr()
-      const dur = 60
+      const dur = Math.max(15, snapToSlot(durationMin))
       const s = get()
       const now = new Date()
       let baseMin = now.getHours() * 60 + now.getMinutes()
@@ -309,7 +309,7 @@ export const useStore = create<Store>((set, get) => {
         if (!conflictsWith(s.scheduled, today, m, dur)) {
           get().addScheduled({
             title: '',
-            color: DEFAULT_COLOR,
+            color: DEFAULT_SLOT_COLOR,
             date: today,
             startMin: m,
             durationMin: dur,

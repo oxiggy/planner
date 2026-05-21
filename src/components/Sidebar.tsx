@@ -1,8 +1,21 @@
 import { Button } from '@/components/ui/button'
 import { useStore } from '@/store'
-import { Plus, CalendarPlus, Upload, Download } from 'lucide-react'
+import { Plus, CalendarPlus, Upload, Download, ChevronDown } from 'lucide-react'
 import { TemplateItem } from './TemplateItem'
 import { download, pickFile, readFile, type TemplatesExport } from '@/lib/json-io'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+
+const slotDurations = [
+  { label: '30 минут', minutes: 30 },
+  { label: '1 час', minutes: 60 },
+  { label: '2 часа', minutes: 120 },
+  { label: '5 часов', minutes: 300 },
+]
 
 export function Sidebar() {
   const templates = useStore((s) => s.templates)
@@ -35,10 +48,39 @@ export function Sidebar() {
             <Plus className="h-3.5 w-3.5" />
             Добавить задачу
           </Button>
-          <Button variant="outline" size="sm" onClick={addSlotToToday}>
-            <CalendarPlus className="h-3.5 w-3.5" />
-            Добавить слот
-          </Button>
+          <div className="flex">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => addSlotToToday()}
+              className="flex-1 rounded-r-none"
+            >
+              <CalendarPlus className="h-3.5 w-3.5" />
+              Добавить слот
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-9 rounded-l-none border-l-0 px-0"
+                  aria-label="Выбрать длительность слота"
+                >
+                  <ChevronDown className="h-3.5 w-3.5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {slotDurations.map((duration) => (
+                  <DropdownMenuItem
+                    key={duration.minutes}
+                    onClick={() => addSlotToToday(duration.minutes)}
+                  >
+                    {duration.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </div>
       <div className="scrollbar-thin flex-1 space-y-1 overflow-y-auto p-2">

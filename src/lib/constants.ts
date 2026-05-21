@@ -47,6 +47,7 @@ export const COLOR_BY_ID: Record<string, ColorDef> = Object.fromEntries(
 )
 
 export const DEFAULT_COLOR = 'sky'
+export const DEFAULT_SLOT_COLOR = 'slate'
 
 export function getColor(id: string): ColorDef {
   return COLOR_BY_ID[id] ?? COLOR_BY_ID[DEFAULT_COLOR]
