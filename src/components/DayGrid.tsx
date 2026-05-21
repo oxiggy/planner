@@ -11,6 +11,8 @@ import {
   getVisibleStartMin,
 } from '@/lib/constants'
 import { DayColumn } from './DayColumn'
+import { Button } from './ui/button'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip'
 
 export function DayGrid() {
   const startDate = useStore((s) => s.startDate)
@@ -35,6 +37,8 @@ export function DayGrid() {
   const visibleStartHour = visibleStartMin / 60
   const hoursCount = VISIBLE_END_HOUR - visibleStartHour
   const dayHeight = hoursCount * HOUR_HEIGHT
+  const hoursToggleLabel = showAllHours ? 'Скрыть ранние часы' : 'Показать остальные часы'
+  const pastDaysToggleLabel = showPastDays ? 'Скрыть прошлые дни' : 'Показать прошлые дни'
 
   return (
     <div className="scrollbar-thin relative h-full flex-1 overflow-auto bg-white dark:bg-slate-950">
@@ -50,32 +54,48 @@ export function DayGrid() {
             className="sticky top-0 z-30 flex items-center justify-center gap-1 border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950"
             style={{ height: HEADER_HEIGHT }}
           >
-            <button
-              onClick={() => setShowAllHours(!showAllHours)}
-              title={showAllHours ? 'Скрыть ранние часы' : 'Показать остальные часы'}
-              aria-label={showAllHours ? 'Скрыть ранние часы' : 'Показать остальные часы'}
-              className="rounded p-1 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-            >
-              {showAllHours ? (
-                <ChevronsDown className="h-4 w-4" />
-              ) : (
-                <ChevronsUp className="h-4 w-4" />
+            <TooltipProvider delayDuration={250}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="iconSm"
+                    onClick={() => setShowAllHours(!showAllHours)}
+                    aria-label={hoursToggleLabel}
+                    className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                  >
+                    {showAllHours ? (
+                      <ChevronsDown className="h-4 w-4" />
+                    ) : (
+                      <ChevronsUp className="h-4 w-4" />
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{hoursToggleLabel}</TooltipContent>
+              </Tooltip>
+              {hasHiddenPastDays && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="iconSm"
+                      onClick={() => setShowPastDays(!showPastDays)}
+                      aria-label={pastDaysToggleLabel}
+                      className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                    >
+                      {showPastDays ? (
+                        <ChevronsRight className="h-4 w-4" />
+                      ) : (
+                        <ChevronsLeft className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{pastDaysToggleLabel}</TooltipContent>
+                </Tooltip>
               )}
-            </button>
-            {hasHiddenPastDays && (
-              <button
-                onClick={() => setShowPastDays(!showPastDays)}
-                title={showPastDays ? 'Скрыть прошлые дни' : 'Показать прошлые дни'}
-                aria-label={showPastDays ? 'Скрыть прошлые дни' : 'Показать прошлые дни'}
-                className="rounded p-1 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-              >
-                {showPastDays ? (
-                  <ChevronsRight className="h-4 w-4" />
-                ) : (
-                  <ChevronsLeft className="h-4 w-4" />
-                )}
-              </button>
-            )}
+            </TooltipProvider>
           </div>
           <div className="relative" style={{ height: dayHeight }}>
             {Array.from({ length: hoursCount + 1 }).map((_, i) => {
