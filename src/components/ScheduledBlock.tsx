@@ -9,15 +9,15 @@ import { formatHM } from '@/lib/time'
 import { useStore } from '@/store'
 import type { ScheduledTask } from '@/types'
 import { cn } from '@/lib/utils'
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 
 type Props = {
   block: ScheduledTask
-  lane: number
-  lanes: number
+  stackIndex: number
 }
 
-export function ScheduledBlock({ block, lane, lanes }: Props) {
+export function ScheduledBlock({ block, stackIndex }: Props) {
+  const [hovered, setHovered] = useState(false)
   const updateScheduled = useStore((s) => s.updateScheduled)
   const deleteScheduled = useStore((s) => s.deleteScheduled)
   const resizeScheduled = useStore((s) => s.resizeScheduled)
@@ -56,26 +56,27 @@ export function ScheduledBlock({ block, lane, lanes }: Props) {
     window.addEventListener('pointerup', up)
   }
 
-  const widthPct = 100 / lanes
-  const leftPct = lane * widthPct
+  const zIndex = isDragging ? 100 : hovered ? 50 : 10 + stackIndex
 
   return (
     <div
       ref={setNodeRef}
+      onPointerEnter={() => setHovered(true)}
+      onPointerLeave={() => setHovered(false)}
       style={{
         position: 'absolute',
         top: block.startMin * MIN_HEIGHT,
         height: heightPx,
-        left: `calc(${leftPct}% + 2px)`,
-        width: `calc(${widthPct}% - 4px)`,
+        left: 2,
+        right: 2,
         background: color.bg,
         borderColor: color.border,
         color: color.text,
         transform: CSS.Translate.toString(transform),
-        zIndex: isDragging ? 50 : 1,
+        zIndex,
       }}
       className={cn(
-        'group select-none rounded-md border text-xs shadow-sm transition-shadow hover:shadow-md',
+        'group select-none rounded-md border text-xs shadow-sm backdrop-blur-[1px] transition-shadow hover:shadow-md',
         isDragging && 'opacity-40',
       )}
       {...attributes}

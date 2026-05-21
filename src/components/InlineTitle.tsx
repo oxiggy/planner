@@ -8,7 +8,7 @@ type Props = {
   placeholder?: string
 }
 
-export function InlineTitle({ value, onChange, className, placeholder }: Props) {
+export function InlineTitle({ value, onChange, className, placeholder = 'Без названия' }: Props) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(value)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -25,7 +25,7 @@ export function InlineTitle({ value, onChange, className, placeholder }: Props) 
   }, [editing])
 
   const commit = () => {
-    const v = draft.trim() || 'Untitled'
+    const v = draft.trim()
     if (v !== value) onChange(v)
     setEditing(false)
   }
@@ -49,7 +49,7 @@ export function InlineTitle({ value, onChange, className, placeholder }: Props) 
         }}
         placeholder={placeholder}
         className={cn(
-          'min-w-0 flex-1 rounded bg-white/70 px-1 text-inherit outline-none ring-1 ring-slate-400',
+          'min-w-0 flex-1 rounded bg-white/70 px-1 text-inherit outline-none ring-1 ring-slate-400 placeholder:text-slate-400',
           className,
         )}
       />
@@ -65,11 +65,12 @@ export function InlineTitle({ value, onChange, className, placeholder }: Props) 
       onPointerDown={(e) => e.stopPropagation()}
       className={cn(
         'min-w-0 flex-1 cursor-text truncate rounded px-1 hover:bg-black/5',
+        !value && 'italic text-slate-400',
         className,
       )}
-      title={value}
+      title={value || placeholder}
     >
-      {value}
+      {value || placeholder}
     </span>
   )
 }

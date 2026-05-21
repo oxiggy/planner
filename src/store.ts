@@ -102,7 +102,7 @@ export const useStore = create<Store>((set, get) => {
     addTemplate(init) {
       const t: Task = {
         id: uid(),
-        title: init?.title ?? 'Untitled',
+        title: init?.title ?? '',
         emoji: init?.emoji,
         color: init?.color ?? DEFAULT_COLOR,
         durationMin: init?.durationMin ?? 60,
@@ -209,7 +209,7 @@ export const useStore = create<Store>((set, get) => {
     importTemplates(templates) {
       const cleaned: Task[] = (templates ?? []).map((t) => ({
         id: t.id || uid(),
-        title: t.title ?? 'Untitled',
+        title: t.title ?? '',
         emoji: t.emoji,
         color: t.color || DEFAULT_COLOR,
         durationMin: t.durationMin || 60,
@@ -224,7 +224,7 @@ export const useStore = create<Store>((set, get) => {
       const cleaned: ScheduledTask[] = (p.scheduled ?? []).map((b) => ({
         id: b.id || uid(),
         templateId: b.templateId,
-        title: b.title ?? 'Untitled',
+        title: b.title ?? '',
         emoji: b.emoji,
         color: b.color || DEFAULT_COLOR,
         note: b.note,
@@ -252,7 +252,7 @@ export const useStore = create<Store>((set, get) => {
       for (let m = baseMin; m + dur <= 1440; m += 15) {
         if (!conflictsWith(s.scheduled, today, m, dur)) {
           get().addScheduled({
-            title: 'Слот',
+            title: '',
             color: DEFAULT_COLOR,
             date: today,
             startMin: m,
