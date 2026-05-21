@@ -101,8 +101,24 @@ export default function App() {
   const copyScheduled = useStore((s) => s.copyScheduled)
   const reorderTemplate = useStore((s) => s.reorderTemplate)
   const setDragPreview = useStore((s) => s.setDragPreview)
+  const setDragCopySourceId = useStore((s) => s.setDragCopySourceId)
   const theme = useStore((s) => s.settings.theme)
   const altPressedRef = useRef(false)
+  const activeScheduledIdRef = useRef<string | null>(null)
+  const dragCopySourceIdRef = useRef<string | null>(null)
+
+  const setCopySource = (id: string | null) => {
+    if (dragCopySourceIdRef.current === id) return
+    dragCopySourceIdRef.current = id
+    setDragCopySourceId(id)
+  }
+
+  const resetDragState = () => {
+    setDragPreview(null)
+    setCopySource(null)
+    activeScheduledIdRef.current = null
+    altPressedRef.current = false
+  }
 
   useEffect(() => {
     const root = document.documentElement
@@ -113,9 +129,11 @@ export default function App() {
   useEffect(() => {
     const onKeyChange = (event: KeyboardEvent) => {
       altPressedRef.current = event.altKey
+      setCopySource(event.altKey ? activeScheduledIdRef.current : null)
     }
     const onBlur = () => {
       altPressedRef.current = false
+      setCopySource(null)
     }
 
     window.addEventListener('keydown', onKeyChange)
@@ -127,29 +145,30 @@ export default function App() {
       window.removeEventListener('keyup', onKeyChange)
       window.removeEventListener('blur', onBlur)
     }
-  }, [])
+  }, [setDragCopySourceId])
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
   )
 
-  const isCopyDrag = (event: DragMoveEvent | DragEndEvent | DragStartEvent) =>
-    altPressedRef.current || getEventAltKey(event.activatorEvent)
-
   const onDragStart = (event: DragStartEvent) => {
+    const activeData = event.active.data.current as { type?: string; blockId?: string } | undefined
     altPressedRef.current = getEventAltKey(event.activatorEvent)
+    activeScheduledIdRef.current =
+      activeData?.type === 'scheduled' && activeData.blockId ? activeData.blockId : null
+    setCopySource(altPressedRef.current ? activeScheduledIdRef.current : null)
   }
 
   const onDragMove = (event: DragMoveEvent) => {
     const overData = event.over?.data.current as { type?: string } | undefined
     const activeData = event.active.data.current as { type?: string } | undefined
+    const copyDrag = activeData?.type === 'scheduled' && altPressedRef.current
+    setCopySource(copyDrag ? activeScheduledIdRef.current : null)
     if (overData?.type === 'template-slot') {
       setDragPreview(null)
       return
     }
-    const target = computeTarget(event, {
-      copyScheduled: activeData?.type === 'scheduled' && isCopyDrag(event),
-    })
+    const target = computeTarget(event, { copyScheduled: copyDrag })
     if (!target || !isValidTarget(target)) {
       setDragPreview(null)
       return
@@ -162,7 +181,6 @@ export default function App() {
   }
 
   const onDragEnd = (event: DragEndEvent) => {
-    setDragPreview(null)
     const activeData = event.active.data.current as
       | { type?: string; blockId?: string; templateId?: string }
       | undefined
@@ -175,11 +193,13 @@ export default function App() {
       overData?.type === 'template-slot' &&
       overData.templateId
     ) {
+      resetDragState()
       reorderTemplate(activeData.templateId, overData.templateId)
       return
     }
-    const copyDrag = activeData?.type === 'scheduled' && isCopyDrag(event)
+    const copyDrag = activeData?.type === 'scheduled' && altPressedRef.current
     const target = computeTarget(event, { copyScheduled: copyDrag })
+    resetDragState()
     if (!target) return
     if (activeData?.type === 'template' && activeData.templateId) {
       addScheduledFromTemplate(activeData.templateId, target.date, target.startMin)
@@ -192,7 +212,7 @@ export default function App() {
     }
   }
 
-  const onDragCancel = () => setDragPreview(null)
+  const onDragCancel = () => resetDragState()
 
   return (
     <DndContext

@@ -7,17 +7,20 @@ import {
   HOUR_HEIGHT,
   MIN_HEIGHT,
   VISIBLE_END_HOUR,
+  getColor,
   getVisibleStartMin,
 } from '@/lib/constants'
 import { formatDayHeader, formatHM, isToday } from '@/lib/time'
 import { ScheduledBlock } from './ScheduledBlock'
 import { cn } from '@/lib/utils'
+import type { ScheduledTask } from '@/types'
 
 type Props = { date: string }
 
 export function DayColumn({ date }: Props) {
   const scheduled = useStore((s) => s.scheduled)
   const showAllHours = useStore((s) => s.settings.showAllHours)
+  const dragCopySourceId = useStore((s) => s.dragCopySourceId)
   const visibleStartMin = getVisibleStartMin(showAllHours)
   const visibleStartHour = visibleStartMin / 60
   const hoursCount = VISIBLE_END_HOUR - visibleStartHour
@@ -35,6 +38,9 @@ export function DayColumn({ date }: Props) {
 
   const today = isToday(date)
   const dayHeader = formatDayHeader(date)
+  const copySourceBlock = dragCopySourceId
+    ? blocks.find((b) => b.id === dragCopySourceId)
+    : null
 
   return (
     <div
@@ -72,6 +78,9 @@ export function DayColumn({ date }: Props) {
         ))}
         {today && <NowLine visibleStartMin={visibleStartMin} />}
         <DropGhost date={date} visibleStartMin={visibleStartMin} />
+        {copySourceBlock && (
+          <CopySourceGhost block={copySourceBlock} visibleStartMin={visibleStartMin} />
+        )}
         {blocks.map((b, i) => (
           <ScheduledBlock
             key={b.id}
@@ -80,6 +89,43 @@ export function DayColumn({ date }: Props) {
             visibleStartMin={visibleStartMin}
           />
         ))}
+      </div>
+    </div>
+  )
+}
+
+function CopySourceGhost({
+  block,
+  visibleStartMin,
+}: {
+  block: ScheduledTask
+  visibleStartMin: number
+}) {
+  const theme = useStore((s) => s.settings.theme)
+  const color = getColor(block.color)
+  const textColor = theme === 'dark' ? '#f1f5f9' : color.text
+
+  return (
+    <div
+      className="pointer-events-none absolute left-0.5 right-0.5 z-[45] rounded-md border border-dashed text-xs shadow-sm opacity-90"
+      style={{
+        top: (block.startMin - visibleStartMin) * MIN_HEIGHT,
+        height: block.durationMin * MIN_HEIGHT,
+        background: color.bg,
+        borderColor: color.border,
+        color: textColor,
+      }}
+    >
+      <div className="flex h-full flex-col px-1.5 py-1">
+        <div className="flex items-start gap-1">
+          {block.emoji && <span className="shrink-0 text-sm leading-tight">{block.emoji}</span>}
+          <span className="truncate text-xs font-medium">{block.title}</span>
+        </div>
+        {block.durationMin >= 30 && (
+          <div className="mt-auto text-[10px] opacity-70">
+            {formatHM(block.startMin)} вЂ” {formatHM(block.startMin + block.durationMin)}
+          </div>
+        )}
       </div>
     </div>
   )
