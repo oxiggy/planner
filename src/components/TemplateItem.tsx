@@ -1,4 +1,4 @@
-import { useDraggable } from '@dnd-kit/core'
+import { useDraggable, useDroppable } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
 import { GripVertical, Trash2, Pencil, StickyNote } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -20,10 +20,20 @@ export function TemplateItem({ task }: Props) {
     id: `template:${task.id}`,
     data: { type: 'template', templateId: task.id },
   })
+  const { setNodeRef: setDropRef, isOver, active } = useDroppable({
+    id: `template-slot:${task.id}`,
+    data: { type: 'template-slot', templateId: task.id },
+  })
+  const activeData = active?.data.current as { type?: string; templateId?: string } | undefined
+  const isReorderTarget =
+    isOver && activeData?.type === 'template' && activeData.templateId !== task.id
 
   return (
     <div
-      ref={setNodeRef}
+      ref={(node) => {
+        setNodeRef(node)
+        setDropRef(node)
+      }}
       style={{
         background: color.bg,
         borderColor: color.border,
@@ -33,6 +43,7 @@ export function TemplateItem({ task }: Props) {
       className={cn(
         'group flex items-center gap-1 rounded-md border px-1.5 py-1.5 text-sm',
         isDragging && 'opacity-40',
+        isReorderTarget && 'ring-2 ring-sky-400',
       )}
     >
       <button

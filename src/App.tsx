@@ -89,6 +89,7 @@ function isValidTarget(t: Target): boolean {
 export default function App() {
   const addScheduledFromTemplate = useStore((s) => s.addScheduledFromTemplate)
   const moveScheduled = useStore((s) => s.moveScheduled)
+  const reorderTemplate = useStore((s) => s.reorderTemplate)
   const setDragPreview = useStore((s) => s.setDragPreview)
 
   const sensors = useSensors(
@@ -96,6 +97,11 @@ export default function App() {
   )
 
   const onDragMove = (event: DragMoveEvent) => {
+    const overData = event.over?.data.current as { type?: string } | undefined
+    if (overData?.type === 'template-slot') {
+      setDragPreview(null)
+      return
+    }
     const target = computeTarget(event)
     if (!target || !isValidTarget(target)) {
       setDragPreview(null)
@@ -110,11 +116,23 @@ export default function App() {
 
   const onDragEnd = (event: DragEndEvent) => {
     setDragPreview(null)
-    const target = computeTarget(event)
-    if (!target) return
     const activeData = event.active.data.current as
       | { type?: string; blockId?: string; templateId?: string }
       | undefined
+    const overData = event.over?.data.current as
+      | { type?: string; templateId?: string }
+      | undefined
+    if (
+      activeData?.type === 'template' &&
+      activeData.templateId &&
+      overData?.type === 'template-slot' &&
+      overData.templateId
+    ) {
+      reorderTemplate(activeData.templateId, overData.templateId)
+      return
+    }
+    const target = computeTarget(event)
+    if (!target) return
     if (activeData?.type === 'template' && activeData.templateId) {
       addScheduledFromTemplate(activeData.templateId, target.date, target.startMin)
     } else if (activeData?.type === 'scheduled' && activeData.blockId) {

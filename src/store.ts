@@ -23,6 +23,7 @@ type Store = PlannerState & {
   addTemplate: (init?: Partial<Task>) => Task
   updateTemplate: (id: string, patch: Partial<Task>) => void
   deleteTemplate: (id: string) => void
+  reorderTemplate: (activeId: string, overId: string) => void
 
   addScheduledFromTemplate: (
     templateId: string,
@@ -140,6 +141,19 @@ export const useStore = create<Store>((set, get) => {
     },
     deleteTemplate(id) {
       set((state) => ({ templates: state.templates.filter((t) => t.id !== id) }))
+      persist()
+    },
+    reorderTemplate(activeId, overId) {
+      if (activeId === overId) return
+      set((state) => {
+        const from = state.templates.findIndex((t) => t.id === activeId)
+        const to = state.templates.findIndex((t) => t.id === overId)
+        if (from === -1 || to === -1) return state
+        const next = state.templates.slice()
+        const [moved] = next.splice(from, 1)
+        next.splice(to, 0, moved)
+        return { templates: next }
+      })
       persist()
     },
 
