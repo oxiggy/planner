@@ -42,6 +42,12 @@ export function isToday(dateStr: string) {
   return dateStr === todayStr()
 }
 
+export function daysBetween(startDate: string, endDate: string) {
+  const start = new Date(startDate + 'T00:00:00').getTime()
+  const end = new Date(endDate + 'T00:00:00').getTime()
+  return Math.max(0, Math.round((end - start) / 86_400_000))
+}
+
 export function rangeDates(startDate: string, count: number): string[] {
   const out: string[] = []
   for (let i = 0; i < count; i++) out.push(addDays(startDate, i))

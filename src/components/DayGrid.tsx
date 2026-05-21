@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
-import { ChevronsDown, ChevronsUp } from 'lucide-react'
+import { ChevronsDown, ChevronsLeft, ChevronsRight, ChevronsUp } from 'lucide-react'
 import { useStore } from '@/store'
-import { rangeDates } from '@/lib/time'
+import { daysBetween, rangeDates, todayStr } from '@/lib/time'
 import {
   DAY_COL_WIDTH,
   GUTTER_WIDTH,
@@ -17,7 +17,19 @@ export function DayGrid() {
   const dayCount = useStore((s) => s.dayCount)
   const showAllHours = useStore((s) => s.settings.showAllHours)
   const setShowAllHours = useStore((s) => s.setShowAllHours)
-  const days = useMemo(() => rangeDates(startDate, dayCount), [startDate, dayCount])
+  const showPastDays = useStore((s) => s.showPastDays)
+  const setShowPastDays = useStore((s) => s.setShowPastDays)
+
+  const today = todayStr()
+  const hiddenPastDays = startDate < today ? daysBetween(startDate, today) : 0
+  const hasHiddenPastDays = hiddenPastDays > 0
+  const visibleStartDate =
+    showPastDays && hasHiddenPastDays ? startDate : (startDate < today ? today : startDate)
+  const visibleDayCount = dayCount + (showPastDays && hasHiddenPastDays ? hiddenPastDays : 0)
+  const days = useMemo(
+    () => rangeDates(visibleStartDate, visibleDayCount),
+    [visibleStartDate, visibleDayCount],
+  )
 
   const visibleStartMin = getVisibleStartMin(showAllHours)
   const visibleStartHour = visibleStartMin / 60
@@ -35,12 +47,13 @@ export function DayGrid() {
           style={{ width: GUTTER_WIDTH }}
         >
           <div
-            className="sticky top-0 z-30 flex items-center justify-center border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950"
+            className="sticky top-0 z-30 flex items-center justify-center gap-1 border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950"
             style={{ height: HEADER_HEIGHT }}
           >
             <button
               onClick={() => setShowAllHours(!showAllHours)}
               title={showAllHours ? 'Скрыть ранние часы' : 'Показать остальные часы'}
+              aria-label={showAllHours ? 'Скрыть ранние часы' : 'Показать остальные часы'}
               className="rounded p-1 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
             >
               {showAllHours ? (
@@ -49,6 +62,20 @@ export function DayGrid() {
                 <ChevronsUp className="h-4 w-4" />
               )}
             </button>
+            {hasHiddenPastDays && (
+              <button
+                onClick={() => setShowPastDays(!showPastDays)}
+                title={showPastDays ? 'Скрыть прошлые дни' : 'Показать прошлые дни'}
+                aria-label={showPastDays ? 'Скрыть прошлые дни' : 'Показать прошлые дни'}
+                className="rounded p-1 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+              >
+                {showPastDays ? (
+                  <ChevronsRight className="h-4 w-4" />
+                ) : (
+                  <ChevronsLeft className="h-4 w-4" />
+                )}
+              </button>
+            )}
           </div>
           <div className="relative" style={{ height: dayHeight }}>
             {Array.from({ length: hoursCount + 1 }).map((_, i) => {

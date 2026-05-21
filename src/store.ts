@@ -14,6 +14,8 @@ export type DragPreview = {
 type Store = PlannerState & {
   dragPreview: DragPreview | null
   setDragPreview: (p: DragPreview | null) => void
+  showPastDays: boolean
+  setShowPastDays: (b: boolean) => void
 
   setStartDate: (s: string) => void
   setDayCount: (n: number) => void
@@ -101,6 +103,10 @@ export const useStore = create<Store>((set, get) => {
     dragPreview: null,
     setDragPreview(p) {
       set({ dragPreview: p })
+    },
+    showPastDays: false,
+    setShowPastDays(b) {
+      set({ showPastDays: b })
     },
 
     setStartDate(startDate) {
