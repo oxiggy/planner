@@ -1,9 +1,149 @@
+import * as React from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useStore } from '@/store'
-import { CalendarDays, Upload, Download, Layers, Sun, Moon } from 'lucide-react'
+import {
+  Upload,
+  Download,
+  LayoutTemplate,
+  Sun,
+  Moon,
+  CalendarIcon,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react'
 import { download, pickFile, readFile, type PlannerExport } from '@/lib/json-io'
+import { cn } from '@/lib/utils'
 import type { ScheduledTask } from '@/types'
+
+const WEEKDAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
+
+function dateFromString(value: string) {
+  return new Date(`${value}T00:00:00`)
+}
+
+function formatDateValue(date: Date) {
+  const y = date.getFullYear()
+  const m = (date.getMonth() + 1).toString().padStart(2, '0')
+  const d = date.getDate().toString().padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
+function formatDateLabel(value: string) {
+  return dateFromString(value).toLocaleDateString('ru-RU', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  })
+}
+
+function getCalendarDays(month: Date) {
+  const first = new Date(month.getFullYear(), month.getMonth(), 1)
+  const start = new Date(first)
+  const mondayOffset = (first.getDay() + 6) % 7
+  start.setDate(first.getDate() - mondayOffset)
+
+  return Array.from({ length: 42 }, (_, i) => {
+    const date = new Date(start)
+    date.setDate(start.getDate() + i)
+    return date
+  })
+}
+
+function HeaderDatePicker({
+  value,
+  onChange,
+}: {
+  value: string
+  onChange: (value: string) => void
+}) {
+  const selectedDate = dateFromString(value)
+  const [open, setOpen] = React.useState(false)
+  const [month, setMonth] = React.useState(() => new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1))
+
+  React.useEffect(() => {
+    setMonth(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1))
+  }, [selectedDate.getFullYear(), selectedDate.getMonth()])
+
+  const monthLabel = month.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' })
+  const days = getCalendarDays(month)
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8 w-[136px] justify-start px-2.5 text-left font-normal"
+        >
+          <CalendarIcon className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400" />
+          <span className="tabular-nums">{formatDateLabel(value)}</span>
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-64 p-2">
+        <div className="mb-2 flex items-center justify-between">
+          <Button
+            type="button"
+            variant="ghost"
+            size="iconSm"
+            onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))}
+            aria-label="Previous month"
+          >
+            <ChevronLeft className="h-3.5 w-3.5" />
+          </Button>
+          <div className="text-sm font-medium capitalize text-slate-900 dark:text-slate-100">
+            {monthLabel}
+          </div>
+          <Button
+            type="button"
+            variant="ghost"
+            size="iconSm"
+            onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))}
+            aria-label="Next month"
+          >
+            <ChevronRight className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+        <div className="grid grid-cols-7 gap-1 text-center text-[11px] text-slate-500 dark:text-slate-400">
+          {WEEKDAYS.map((day) => (
+            <div key={day} className="h-6 leading-6">
+              {day}
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-7 gap-1">
+          {days.map((day) => {
+            const dateValue = formatDateValue(day)
+            const selected = dateValue === value
+            const outside = day.getMonth() !== month.getMonth()
+
+            return (
+              <button
+                key={dateValue}
+                type="button"
+                onClick={() => {
+                  onChange(dateValue)
+                  setOpen(false)
+                }}
+                className={cn(
+                  'grid h-7 w-7 place-items-center rounded-md text-xs tabular-nums transition-colors',
+                  'hover:bg-slate-100 dark:hover:bg-slate-800',
+                  outside && 'text-slate-400 dark:text-slate-600',
+                  selected &&
+                    'bg-slate-900 text-white hover:bg-slate-900 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-100',
+                )}
+              >
+                {day.getDate()}
+              </button>
+            )
+          })}
+        </div>
+      </PopoverContent>
+    </Popover>
+  )
+}
 
 export function Toolbar() {
   const startDate = useStore((s) => s.startDate)
@@ -16,6 +156,9 @@ export function Toolbar() {
   const setTheme = useStore((s) => s.setTheme)
   const scheduled = useStore((s) => s.scheduled)
   const importPlanner = useStore((s) => s.importPlanner)
+  const startDateLabel = 'Дата старта'
+  const dayCountLabel = 'Количество дней'
+  const preventOverlapLabel = 'Запретить пересечения'
 
   const onExport = () => {
     const data: PlannerExport = { version: 1, startDate, dayCount, scheduled }
@@ -44,37 +187,59 @@ export function Toolbar() {
   return (
     <header className="flex h-14 shrink-0 items-center gap-3 border-b border-slate-200 bg-white px-4 dark:border-slate-800 dark:bg-slate-900">
       <div className="flex items-center gap-2 font-semibold text-slate-900 dark:text-slate-100">
-        <CalendarDays className="h-5 w-5 text-slate-700 dark:text-slate-300" />
-        <span>Vibe Planner</span>
+        <span>Planner</span>
       </div>
-      <div className="ml-4 flex items-center gap-2">
-        <label className="text-xs text-slate-600 dark:text-slate-400">С даты</label>
-        <Input
-          type="date"
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-          className="h-8 w-[150px]"
-        />
-        <label className="text-xs text-slate-600 dark:text-slate-400">Дней</label>
-        <Input
-          type="number"
-          min={1}
-          max={60}
-          value={dayCount}
-          onChange={(e) => setDayCount(Number(e.target.value))}
-          className="h-8 w-[80px]"
-        />
+      <div className="flex items-center gap-2">
+        <TooltipProvider delayDuration={250}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div>
+                <HeaderDatePicker value={startDate} onChange={setStartDate} />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>{startDateLabel}</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        <TooltipProvider delayDuration={250}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Input
+                type="number"
+                min={1}
+                max={60}
+                value={dayCount}
+                onChange={(e) => setDayCount(Number(e.target.value))}
+                aria-label={dayCountLabel}
+                className="h-8 w-[104px]"
+              />
+            </TooltipTrigger>
+            <TooltipContent>{dayCountLabel}</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
-      <label className="ml-2 flex cursor-pointer items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400">
-        <input
-          type="checkbox"
-          checked={preventOverlap}
-          onChange={(e) => setPreventOverlap(e.target.checked)}
-          className="h-3.5 w-3.5"
-        />
-        <Layers className="h-3.5 w-3.5" />
-        Запретить пересечения
-      </label>
+      <TooltipProvider delayDuration={250}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label={preventOverlapLabel}
+              aria-pressed={preventOverlap}
+              onClick={() => setPreventOverlap(!preventOverlap)}
+              className="ml-1 text-slate-600 dark:text-slate-400"
+            >
+              <span className="relative grid h-4 w-4 place-items-center" aria-hidden="true">
+                <LayoutTemplate className="h-4 w-4" />
+                {preventOverlap && (
+                  <span className="absolute h-[1.5px] w-5 rotate-45 rounded-full bg-current" />
+                )}
+              </span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{preventOverlapLabel}</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
       <div className="ml-auto flex items-center gap-1.5">
         <Button
           variant="ghost"

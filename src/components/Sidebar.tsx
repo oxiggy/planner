@@ -30,9 +30,6 @@ export function Sidebar() {
   return (
     <aside className="flex h-full w-72 shrink-0 flex-col border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
       <div className="border-b border-slate-200 p-3 dark:border-slate-800">
-        <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-          Задачи
-        </div>
         <div className="flex flex-col gap-1.5">
           <Button variant="outline" size="sm" onClick={() => addTemplate()}>
             <Plus className="h-3.5 w-3.5" />
