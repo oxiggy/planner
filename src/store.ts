@@ -38,6 +38,8 @@ type Store = PlannerState & {
   deleteScheduled: (id: string) => void
   moveScheduled: (id: string, date: string, startMin: number) => boolean
   resizeScheduled: (id: string, durationMin: number) => boolean
+  clearTemplates: () => void
+  clearPlanner: () => void
 
   importTemplates: (templates: Task[]) => void
   importPlanner: (p: { startDate: string; dayCount: number; scheduled: ScheduledTask[] }) => void
@@ -248,6 +250,16 @@ export const useStore = create<Store>((set, get) => {
       }))
       persist()
       return true
+    },
+
+    clearTemplates() {
+      set({ templates: [] })
+      persist()
+    },
+
+    clearPlanner() {
+      set({ scheduled: [] })
+      persist()
     },
 
     importTemplates(templates) {

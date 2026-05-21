@@ -1,6 +1,22 @@
 import * as React from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useStore } from '@/store'
@@ -13,6 +29,8 @@ import {
   CalendarIcon,
   ChevronLeft,
   ChevronRight,
+  Settings,
+  Trash2,
 } from 'lucide-react'
 import { download, pickFile, readFile, type PlannerExport } from '@/lib/json-io'
 import { cn } from '@/lib/utils'
@@ -146,6 +164,7 @@ function HeaderDatePicker({
 }
 
 export function Toolbar() {
+  const [clearTarget, setClearTarget] = React.useState<'tasks' | 'planner' | null>(null)
   const startDate = useStore((s) => s.startDate)
   const dayCount = useStore((s) => s.dayCount)
   const preventOverlap = useStore((s) => s.settings.preventOverlap)
@@ -156,6 +175,27 @@ export function Toolbar() {
   const setTheme = useStore((s) => s.setTheme)
   const scheduled = useStore((s) => s.scheduled)
   const importPlanner = useStore((s) => s.importPlanner)
+  const clearTemplates = useStore((s) => s.clearTemplates)
+  const clearPlanner = useStore((s) => s.clearPlanner)
+  const themeLabel =
+    theme === 'dark'
+      ? 'Светлая тема'
+      : 'Тёмная тема'
+  const settingsLabel = 'Настройки'
+  const clearDialog =
+    clearTarget === 'tasks'
+      ? {
+          title:
+            'Очистить все задачи?',
+          description:
+            'Это удалит все задачи из боковой панели. Запланированные блоки останутся.',
+        }
+      : {
+          title:
+            'Очистить планнер?',
+          description:
+            'Это удалит все запланированные блоки. Список задач останется.',
+        }
   const startDateLabel = 'Дата старта'
   const dayCountLabel = 'Количество дней'
   const preventOverlapLabel = 'Запретить пересечения'
@@ -182,6 +222,12 @@ export function Toolbar() {
     } catch (e) {
       alert('Не удалось прочитать файл: ' + (e as Error).message)
     }
+  }
+
+  const onConfirmClear = () => {
+    if (clearTarget === 'tasks') clearTemplates()
+    if (clearTarget === 'planner') clearPlanner()
+    setClearTarget(null)
   }
 
   return (
@@ -241,14 +287,60 @@ export function Toolbar() {
         </Tooltip>
       </TooltipProvider>
       <div className="ml-auto flex items-center gap-1.5">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          title={theme === 'dark' ? 'Светлая тема' : 'Тёмная тема'}
-        >
-          {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-        </Button>
+        <TooltipProvider delayDuration={250}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                aria-label={themeLabel}
+                title={theme === 'dark' ? 'Светлая тема' : 'Тёмная тема'}
+              >
+                {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{themeLabel}</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        <AlertDialog open={clearTarget !== null} onOpenChange={(open) => !open && setClearTarget(null)}>
+          <DropdownMenu>
+            <TooltipProvider delayDuration={250}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" aria-label={settingsLabel}>
+                      <Settings className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                </TooltipTrigger>
+                <TooltipContent>{settingsLabel}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onSelect={() => setClearTarget('tasks')}>
+                <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
+                Очистить задачи
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => setClearTarget('planner')}>
+                <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
+                Очистить планнер
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{clearDialog.title}</AlertDialogTitle>
+              <AlertDialogDescription>{clearDialog.description}</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Отмена</AlertDialogCancel>
+              <AlertDialogAction onClick={onConfirmClear}>
+                Очистить
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
         <Button variant="outline" size="sm" onClick={onImport}>
           <Upload className="h-3.5 w-3.5" />
           Загрузить JSON
