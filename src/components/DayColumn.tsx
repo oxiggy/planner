@@ -7,7 +7,7 @@ import {
   HOUR_HEIGHT,
   MIN_HEIGHT,
 } from '@/lib/constants'
-import { formatDayHeader, isToday } from '@/lib/time'
+import { formatDayHeader, formatHM, isToday } from '@/lib/time'
 import { ScheduledBlock } from './ScheduledBlock'
 import { cn } from '@/lib/utils'
 
@@ -57,9 +57,30 @@ export function DayColumn({ date }: Props) {
           </div>
         ))}
         {today && <NowLine />}
+        <DropGhost date={date} />
         {blocks.map((b, i) => (
           <ScheduledBlock key={b.id} block={b} stackIndex={i} />
         ))}
+      </div>
+    </div>
+  )
+}
+
+function DropGhost({ date }: { date: string }) {
+  const preview = useStore((s) =>
+    s.dragPreview && s.dragPreview.date === date ? s.dragPreview : null,
+  )
+  if (!preview) return null
+  return (
+    <div
+      className="pointer-events-none absolute left-1 right-1 z-[60] rounded-md border-2 border-dashed border-sky-500/70 bg-sky-500/15"
+      style={{
+        top: preview.startMin * MIN_HEIGHT,
+        height: preview.durationMin * MIN_HEIGHT,
+      }}
+    >
+      <div className="px-1 py-0.5 text-[10px] font-medium text-sky-800">
+        {formatHM(preview.startMin)} — {formatHM(preview.startMin + preview.durationMin)}
       </div>
     </div>
   )

@@ -8,7 +8,7 @@ type Props = {
   placeholder?: string
 }
 
-export function InlineTitle({ value, onChange, className, placeholder = 'Без названия' }: Props) {
+export function InlineTitle({ value, onChange, className, placeholder = '' }: Props) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(value)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -65,12 +65,11 @@ export function InlineTitle({ value, onChange, className, placeholder = 'Без 
       onPointerDown={(e) => e.stopPropagation()}
       className={cn(
         'min-w-0 flex-1 cursor-text truncate rounded px-1 hover:bg-black/5',
-        !value && 'italic text-slate-400',
         className,
       )}
-      title={value || placeholder}
+      title={value}
     >
-      {value || placeholder}
+      {value || ' '}
     </span>
   )
 }

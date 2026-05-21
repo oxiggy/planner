@@ -5,7 +5,16 @@ import { loadState, saveState } from './lib/storage'
 import { uid } from './lib/utils'
 import { snapToSlot, todayStr } from './lib/time'
 
+export type DragPreview = {
+  date: string
+  startMin: number
+  durationMin: number
+}
+
 type Store = PlannerState & {
+  dragPreview: DragPreview | null
+  setDragPreview: (p: DragPreview | null) => void
+
   setStartDate: (s: string) => void
   setDayCount: (n: number) => void
   setPreventOverlap: (b: boolean) => void
@@ -85,6 +94,11 @@ export const useStore = create<Store>((set, get) => {
 
   return {
     ...initial,
+
+    dragPreview: null,
+    setDragPreview(p) {
+      set({ dragPreview: p })
+    },
 
     setStartDate(startDate) {
       set({ startDate })
