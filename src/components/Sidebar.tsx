@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { useStore } from '@/store'
-import { Plus, CalendarPlus, Upload, Download, ChevronDown, Minus } from 'lucide-react'
+import { Plus, CalendarPlus, Upload, Download, ChevronDown, Minus, SmilePlus } from 'lucide-react'
 import { TemplateItem } from './TemplateItem'
 import { download, pickFile, readFile, type TemplatesExport } from '@/lib/json-io'
 import {
@@ -13,6 +13,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Input } from '@/components/ui/input'
 import { ColorPicker } from './ColorPicker'
+import { EmojiPicker } from './EmojiPicker'
 import { DEFAULT_COLOR } from '@/lib/constants'
 
 const slotDurations = [
@@ -28,19 +29,24 @@ export function Sidebar() {
   const addSlotToToday = useStore((s) => s.addSlotToToday)
   const importTemplates = useStore((s) => s.importTemplates)
   const [isAddTaskOpen, setIsAddTaskOpen] = useState(false)
+  const [isEmojiOpen, setIsEmojiOpen] = useState(false)
   const [newTaskTitle, setNewTaskTitle] = useState('')
+  const [newTaskEmoji, setNewTaskEmoji] = useState<string | undefined>()
   const [newTaskColor, setNewTaskColor] = useState(DEFAULT_COLOR)
   const [newTaskDurationMin, setNewTaskDurationMin] = useState(60)
 
   const onAddTask = () => {
     addTemplate({
       title: newTaskTitle,
+      emoji: newTaskEmoji,
       color: newTaskColor,
       durationMin: newTaskDurationMin,
     })
     setNewTaskTitle('')
+    setNewTaskEmoji(undefined)
     setNewTaskColor(DEFAULT_COLOR)
     setNewTaskDurationMin(60)
+    setIsEmojiOpen(false)
     setIsAddTaskOpen(false)
   }
 
@@ -77,10 +83,33 @@ export function Sidebar() {
               collisionPadding={8}
               className="w-72 space-y-3"
             >
-              <div>
-                <div className="mb-1.5 text-xs font-medium text-slate-600 dark:text-slate-300">
-                  Название
-                </div>
+              <div className="flex gap-2">
+                <Popover open={isEmojiOpen} onOpenChange={setIsEmojiOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      aria-label="Выбрать смайлик"
+                      title="Выбрать смайлик"
+                      className="h-9 shrink-0"
+                    >
+                      {newTaskEmoji ? (
+                        <span className="text-base leading-none">{newTaskEmoji}</span>
+                      ) : (
+                        <SmilePlus className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent align="start" collisionPadding={8} className="w-72">
+                    <EmojiPicker
+                      value={newTaskEmoji}
+                      onChange={(emoji) => {
+                        setNewTaskEmoji(emoji)
+                        setIsEmojiOpen(false)
+                      }}
+                    />
+                  </PopoverContent>
+                </Popover>
                 <Input
                   value={newTaskTitle}
                   onChange={(e) => setNewTaskTitle(e.target.value)}
