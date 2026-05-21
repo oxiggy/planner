@@ -5,8 +5,9 @@ import {
   useSensors,
   type DragEndEvent,
   type DragMoveEvent,
+  type DragStartEvent,
 } from '@dnd-kit/core'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { Toolbar } from './components/Toolbar'
 import { Sidebar } from './components/Sidebar'
 import { DayGrid } from './components/DayGrid'
@@ -23,6 +24,10 @@ function getEventClientY(e: Event | undefined): number | null {
   return t ? t.clientY : null
 }
 
+function getEventAltKey(e: Event | undefined): boolean {
+  return !!e && 'altKey' in e && !!(e as MouseEvent | KeyboardEvent).altKey
+}
+
 type Target = {
   date: string
   startMin: number
@@ -30,7 +35,10 @@ type Target = {
   ignoreId?: string
 }
 
-function computeTarget(event: DragMoveEvent | DragEndEvent): Target | null {
+function computeTarget(
+  event: DragMoveEvent | DragEndEvent,
+  options: { copyScheduled?: boolean } = {},
+): Target | null {
   const { active, over } = event
   if (!over) return null
   const overData = over.data.current as { type?: string; date?: string } | undefined
@@ -67,7 +75,7 @@ function computeTarget(event: DragMoveEvent | DragEndEvent): Target | null {
       date: overData.date,
       startMin,
       durationMin: block.durationMin,
-      ignoreId: block.id,
+      ignoreId: options.copyScheduled ? undefined : block.id,
     }
   }
   return null
@@ -90,9 +98,11 @@ function isValidTarget(t: Target): boolean {
 export default function App() {
   const addScheduledFromTemplate = useStore((s) => s.addScheduledFromTemplate)
   const moveScheduled = useStore((s) => s.moveScheduled)
+  const copyScheduled = useStore((s) => s.copyScheduled)
   const reorderTemplate = useStore((s) => s.reorderTemplate)
   const setDragPreview = useStore((s) => s.setDragPreview)
   const theme = useStore((s) => s.settings.theme)
+  const altPressedRef = useRef(false)
 
   useEffect(() => {
     const root = document.documentElement
@@ -100,17 +110,46 @@ export default function App() {
     root.style.colorScheme = theme
   }, [theme])
 
+  useEffect(() => {
+    const onKeyChange = (event: KeyboardEvent) => {
+      altPressedRef.current = event.altKey
+    }
+    const onBlur = () => {
+      altPressedRef.current = false
+    }
+
+    window.addEventListener('keydown', onKeyChange)
+    window.addEventListener('keyup', onKeyChange)
+    window.addEventListener('blur', onBlur)
+
+    return () => {
+      window.removeEventListener('keydown', onKeyChange)
+      window.removeEventListener('keyup', onKeyChange)
+      window.removeEventListener('blur', onBlur)
+    }
+  }, [])
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
   )
 
+  const isCopyDrag = (event: DragMoveEvent | DragEndEvent | DragStartEvent) =>
+    altPressedRef.current || getEventAltKey(event.activatorEvent)
+
+  const onDragStart = (event: DragStartEvent) => {
+    altPressedRef.current = getEventAltKey(event.activatorEvent)
+  }
+
   const onDragMove = (event: DragMoveEvent) => {
     const overData = event.over?.data.current as { type?: string } | undefined
+    const activeData = event.active.data.current as { type?: string } | undefined
     if (overData?.type === 'template-slot') {
       setDragPreview(null)
       return
     }
-    const target = computeTarget(event)
+    const target = computeTarget(event, {
+      copyScheduled: activeData?.type === 'scheduled' && isCopyDrag(event),
+    })
     if (!target || !isValidTarget(target)) {
       setDragPreview(null)
       return
@@ -139,12 +178,17 @@ export default function App() {
       reorderTemplate(activeData.templateId, overData.templateId)
       return
     }
-    const target = computeTarget(event)
+    const copyDrag = activeData?.type === 'scheduled' && isCopyDrag(event)
+    const target = computeTarget(event, { copyScheduled: copyDrag })
     if (!target) return
     if (activeData?.type === 'template' && activeData.templateId) {
       addScheduledFromTemplate(activeData.templateId, target.date, target.startMin)
     } else if (activeData?.type === 'scheduled' && activeData.blockId) {
-      moveScheduled(activeData.blockId, target.date, target.startMin)
+      if (copyDrag) {
+        copyScheduled(activeData.blockId, target.date, target.startMin)
+      } else {
+        moveScheduled(activeData.blockId, target.date, target.startMin)
+      }
     }
   }
 
@@ -153,6 +197,7 @@ export default function App() {
   return (
     <DndContext
       sensors={sensors}
+      onDragStart={onDragStart}
       onDragMove={onDragMove}
       onDragEnd={onDragEnd}
       onDragCancel={onDragCancel}

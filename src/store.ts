@@ -37,6 +37,7 @@ type Store = PlannerState & {
   updateScheduled: (id: string, patch: Partial<ScheduledTask>) => void
   deleteScheduled: (id: string) => void
   moveScheduled: (id: string, date: string, startMin: number) => boolean
+  copyScheduled: (id: string, date: string, startMin: number) => ScheduledTask | null
   resizeScheduled: (id: string, durationMin: number) => boolean
   clearTemplates: () => void
   clearPlanner: () => void
@@ -231,6 +232,17 @@ export const useStore = create<Store>((set, get) => {
       }))
       persist()
       return true
+    },
+
+    copyScheduled(id, date, startMin) {
+      const block = get().scheduled.find((b) => b.id === id)
+      if (!block) return null
+      const { id: _id, ...copy } = block
+      return get().addScheduled({
+        ...copy,
+        date,
+        startMin,
+      })
     },
 
     resizeScheduled(id, durationMin) {
