@@ -37,8 +37,9 @@ export function EditPopover({
       <PopoverTrigger asChild>{trigger}</PopoverTrigger>
       <PopoverContent
         align="end"
+        collisionPadding={8}
         onPointerDown={(e) => e.stopPropagation()}
-        className="w-80 space-y-3"
+        className="w-80 max-h-[var(--radix-popover-content-available-height)] space-y-3 overflow-y-auto scrollbar-thin"
       >
         <div>
           <div className="mb-1.5 text-xs font-medium text-slate-600 dark:text-slate-300">Цвет</div>
