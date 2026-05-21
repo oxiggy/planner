@@ -37,11 +37,14 @@ export function DayColumn({ date }: Props) {
   const dayHeader = formatDayHeader(date)
 
   return (
-    <div className="shrink-0 border-r border-slate-200" style={{ width: DAY_COL_WIDTH }}>
+    <div
+      className="shrink-0 border-r border-slate-200 dark:border-slate-800"
+      style={{ width: DAY_COL_WIDTH }}
+    >
       <div
         className={cn(
-          'sticky top-0 z-20 flex items-center justify-center border-b border-slate-200 bg-white px-2 text-sm font-medium',
-          today && 'bg-sky-50 text-sky-800',
+          'sticky top-0 z-20 flex items-center justify-center border-b border-slate-200 bg-white px-2 text-sm font-medium dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200',
+          today && 'bg-sky-50 text-sky-800 dark:bg-sky-950/40 dark:text-sky-300',
         )}
         style={{ height: HEADER_HEIGHT }}
       >
@@ -49,17 +52,20 @@ export function DayColumn({ date }: Props) {
       </div>
       <div
         ref={setNodeRef}
-        className={cn('relative overflow-hidden', isOver && 'bg-sky-50/40')}
+        className={cn(
+          'relative overflow-hidden',
+          isOver && 'bg-sky-50/40 dark:bg-sky-900/20',
+        )}
         style={{ height: dayHeight }}
       >
         {Array.from({ length: hoursCount }).map((_, i) => (
           <div key={`h-${i}`}>
             <div
-              className="pointer-events-none absolute left-0 right-0 border-t border-slate-200"
+              className="pointer-events-none absolute left-0 right-0 border-t border-slate-200 dark:border-slate-800"
               style={{ top: i * HOUR_HEIGHT }}
             />
             <div
-              className="pointer-events-none absolute left-0 right-0 border-t border-dashed border-slate-200/80"
+              className="pointer-events-none absolute left-0 right-0 border-t border-dashed border-slate-200/80 dark:border-slate-800/80"
               style={{ top: i * HOUR_HEIGHT + HOUR_HEIGHT / 2 }}
             />
           </div>

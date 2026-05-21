@@ -25,23 +25,23 @@ export function DayGrid() {
   const dayHeight = hoursCount * HOUR_HEIGHT
 
   return (
-    <div className="scrollbar-thin relative h-full flex-1 overflow-auto bg-white">
+    <div className="scrollbar-thin relative h-full flex-1 overflow-auto bg-white dark:bg-slate-950">
       <div
         className="flex"
         style={{ minWidth: GUTTER_WIDTH + days.length * DAY_COL_WIDTH }}
       >
         <div
-          className="sticky left-0 z-30 shrink-0 border-r border-slate-200 bg-white"
+          className="sticky left-0 z-30 shrink-0 border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950"
           style={{ width: GUTTER_WIDTH }}
         >
           <div
-            className="sticky top-0 z-30 flex items-center justify-center border-b border-slate-200 bg-white"
+            className="sticky top-0 z-30 flex items-center justify-center border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950"
             style={{ height: HEADER_HEIGHT }}
           >
             <button
               onClick={() => setShowAllHours(!showAllHours)}
               title={showAllHours ? 'Скрыть ранние часы' : 'Показать остальные часы'}
-              className="rounded p-1 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700"
+              className="rounded p-1 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
             >
               {showAllHours ? (
                 <ChevronsDown className="h-4 w-4" />
@@ -57,7 +57,7 @@ export function DayGrid() {
               return (
                 <div
                   key={h}
-                  className="absolute left-0 right-0 select-none px-1 text-[10px] text-slate-500"
+                  className="absolute left-0 right-0 select-none px-1 text-[10px] text-slate-500 dark:text-slate-400"
                   style={{ top: i * HOUR_HEIGHT - 6 }}
                 >
                   {h.toString().padStart(2, '0')}:00

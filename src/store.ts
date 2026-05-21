@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { PlannerState, ScheduledTask, Task } from './types'
+import type { PlannerState, ScheduledTask, Task, Theme } from './types'
 import { DEFAULT_COLOR } from './lib/constants'
 import { loadState, saveState } from './lib/storage'
 import { uid } from './lib/utils'
@@ -19,6 +19,7 @@ type Store = PlannerState & {
   setDayCount: (n: number) => void
   setPreventOverlap: (b: boolean) => void
   setShowAllHours: (b: boolean) => void
+  setTheme: (t: Theme) => void
 
   addTemplate: (init?: Partial<Task>) => Task
   updateTemplate: (id: string, patch: Partial<Task>) => void
@@ -65,7 +66,7 @@ function defaultState(): PlannerState {
     dayCount: 7,
     templates: [],
     scheduled: [],
-    settings: { preventOverlap: false, showAllHours: false },
+    settings: { preventOverlap: false, showAllHours: false, theme: 'light' },
   }
 }
 
@@ -116,6 +117,10 @@ export const useStore = create<Store>((set, get) => {
     },
     setShowAllHours(b) {
       set((state) => ({ settings: { ...state.settings, showAllHours: b } }))
+      persist()
+    },
+    setTheme(t) {
+      set((state) => ({ settings: { ...state.settings, theme: t } }))
       persist()
     },
 

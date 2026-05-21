@@ -41,19 +41,19 @@ export function EditPopover({
         className="w-80 space-y-3"
       >
         <div>
-          <div className="mb-1.5 text-xs font-medium text-slate-600">Цвет</div>
+          <div className="mb-1.5 text-xs font-medium text-slate-600 dark:text-slate-300">Цвет</div>
           <ColorPicker value={value.color} onChange={(c) => onChange({ color: c })} />
         </div>
         <div>
-          <div className="mb-1.5 text-xs font-medium text-slate-600">Эмодзи</div>
+          <div className="mb-1.5 text-xs font-medium text-slate-600 dark:text-slate-300">Эмодзи</div>
           <EmojiPicker value={value.emoji} onChange={(e) => onChange({ emoji: e })} />
         </div>
         {showDuration && durationMin !== undefined && onDurationChange && (
           <div>
-            <div className="mb-1.5 text-xs font-medium text-slate-600">
+            <div className="mb-1.5 text-xs font-medium text-slate-600 dark:text-slate-300">
               Длительность{' '}
               {startMin !== undefined && (
-                <span className="text-slate-400">
+                <span className="text-slate-400 dark:text-slate-500">
                   {formatHM(startMin)} — {formatHM(startMin + durationMin)}
                 </span>
               )}
@@ -78,17 +78,17 @@ export function EditPopover({
           </div>
         )}
         <div>
-          <div className="mb-1.5 text-xs font-medium text-slate-600">Заметка</div>
+          <div className="mb-1.5 text-xs font-medium text-slate-600 dark:text-slate-300">Заметка</div>
           <textarea
             value={value.note ?? ''}
             onChange={(e) => onChange({ note: e.target.value })}
             placeholder="Любой текст..."
             rows={3}
-            className="w-full resize-y rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm placeholder:text-slate-400 focus:ring-2 focus:ring-slate-400"
+            className="w-full resize-y rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:ring-slate-500"
           />
         </div>
         <div>
-          <div className="mb-1.5 text-xs font-medium text-slate-600">Ссылка</div>
+          <div className="mb-1.5 text-xs font-medium text-slate-600 dark:text-slate-300">Ссылка</div>
           <Input
             value={value.noteLink ?? ''}
             onChange={(e) => onChange({ noteLink: e.target.value })}

@@ -14,7 +14,9 @@ type Props = { task: Task }
 export function TemplateItem({ task }: Props) {
   const updateTemplate = useStore((s) => s.updateTemplate)
   const deleteTemplate = useStore((s) => s.deleteTemplate)
+  const theme = useStore((s) => s.settings.theme)
   const color = getColor(task.color)
+  const textColor = theme === 'dark' ? '#f1f5f9' : color.text
 
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: `template:${task.id}`,
@@ -37,7 +39,7 @@ export function TemplateItem({ task }: Props) {
       style={{
         background: color.bg,
         borderColor: color.border,
-        color: color.text,
+        color: textColor,
         transform: CSS.Translate.toString(transform),
       }}
       className={cn(
@@ -49,7 +51,7 @@ export function TemplateItem({ task }: Props) {
       <button
         {...attributes}
         {...listeners}
-        className="cursor-grab touch-none text-slate-500 hover:text-slate-800"
+        className="cursor-grab touch-none opacity-60 hover:opacity-100"
         title="Перетащить"
       >
         <GripVertical className="h-4 w-4" />
@@ -61,11 +63,11 @@ export function TemplateItem({ task }: Props) {
         className="text-sm"
       />
       {task.note && (
-        <span title={task.note} className="text-slate-500">
+        <span title={task.note} className="opacity-70">
           <StickyNote className="h-3.5 w-3.5" />
         </span>
       )}
-      <span className="text-[10px] text-slate-500">
+      <span className="text-[10px] opacity-70">
         {Math.floor(task.durationMin / 60)}ч{task.durationMin % 60 ? `${task.durationMin % 60}м` : ''}
       </span>
       <div className="ml-auto flex items-center opacity-0 transition-opacity group-hover:opacity-100">

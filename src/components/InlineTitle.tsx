@@ -49,7 +49,7 @@ export function InlineTitle({ value, onChange, className, placeholder = '' }: Pr
         }}
         placeholder={placeholder}
         className={cn(
-          'min-w-0 flex-1 rounded bg-white/70 px-1 text-inherit outline-none ring-1 ring-slate-400 placeholder:text-slate-400',
+          'min-w-0 flex-1 rounded bg-white/70 px-1 text-inherit outline-none ring-1 ring-slate-400 placeholder:text-slate-400 dark:bg-slate-900/60 dark:ring-slate-500 dark:placeholder:text-slate-500',
           className,
         )}
       />
@@ -64,7 +64,7 @@ export function InlineTitle({ value, onChange, className, placeholder = '' }: Pr
       }}
       onPointerDown={(e) => e.stopPropagation()}
       className={cn(
-        'min-w-0 flex-1 cursor-text truncate rounded px-1 hover:bg-black/5',
+        'min-w-0 flex-1 cursor-text truncate rounded px-1 hover:bg-black/5 dark:hover:bg-white/10',
         className,
       )}
       title={value}

@@ -18,7 +18,9 @@ export function ColorPicker({ value, onChange }: Props) {
           onPointerDown={(e) => e.stopPropagation()}
           className={cn(
             'h-6 w-6 rounded-md border transition-transform hover:scale-110',
-            value === c.id ? 'ring-2 ring-offset-1 ring-slate-700' : '',
+            value === c.id
+              ? 'ring-2 ring-offset-1 ring-slate-700 dark:ring-slate-200 dark:ring-offset-slate-900'
+              : '',
           )}
           style={{ background: c.bg, borderColor: c.border }}
         />

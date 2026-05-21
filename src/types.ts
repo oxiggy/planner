@@ -21,9 +21,12 @@ export type ScheduledTask = {
   durationMin: number // multiple of 15
 }
 
+export type Theme = 'light' | 'dark'
+
 export type Settings = {
   preventOverlap: boolean
   showAllHours: boolean
+  theme: Theme
 }
 
 export type PlannerState = {

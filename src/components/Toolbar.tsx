@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useStore } from '@/store'
-import { CalendarDays, Upload, Download, Layers } from 'lucide-react'
+import { CalendarDays, Upload, Download, Layers, Sun, Moon } from 'lucide-react'
 import { download, pickFile, readFile, type PlannerExport } from '@/lib/json-io'
 import type { ScheduledTask } from '@/types'
 
@@ -9,9 +9,11 @@ export function Toolbar() {
   const startDate = useStore((s) => s.startDate)
   const dayCount = useStore((s) => s.dayCount)
   const preventOverlap = useStore((s) => s.settings.preventOverlap)
+  const theme = useStore((s) => s.settings.theme)
   const setStartDate = useStore((s) => s.setStartDate)
   const setDayCount = useStore((s) => s.setDayCount)
   const setPreventOverlap = useStore((s) => s.setPreventOverlap)
+  const setTheme = useStore((s) => s.setTheme)
   const scheduled = useStore((s) => s.scheduled)
   const importPlanner = useStore((s) => s.importPlanner)
 
@@ -40,20 +42,20 @@ export function Toolbar() {
   }
 
   return (
-    <header className="flex h-14 shrink-0 items-center gap-3 border-b border-slate-200 bg-white px-4">
-      <div className="flex items-center gap-2 font-semibold">
-        <CalendarDays className="h-5 w-5 text-slate-700" />
+    <header className="flex h-14 shrink-0 items-center gap-3 border-b border-slate-200 bg-white px-4 dark:border-slate-800 dark:bg-slate-900">
+      <div className="flex items-center gap-2 font-semibold text-slate-900 dark:text-slate-100">
+        <CalendarDays className="h-5 w-5 text-slate-700 dark:text-slate-300" />
         <span>Vibe Planner</span>
       </div>
       <div className="ml-4 flex items-center gap-2">
-        <label className="text-xs text-slate-600">С даты</label>
+        <label className="text-xs text-slate-600 dark:text-slate-400">С даты</label>
         <Input
           type="date"
           value={startDate}
           onChange={(e) => setStartDate(e.target.value)}
           className="h-8 w-[150px]"
         />
-        <label className="text-xs text-slate-600">Дней</label>
+        <label className="text-xs text-slate-600 dark:text-slate-400">Дней</label>
         <Input
           type="number"
           min={1}
@@ -63,7 +65,7 @@ export function Toolbar() {
           className="h-8 w-[80px]"
         />
       </div>
-      <label className="ml-2 flex cursor-pointer items-center gap-1.5 text-xs text-slate-600">
+      <label className="ml-2 flex cursor-pointer items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400">
         <input
           type="checkbox"
           checked={preventOverlap}
@@ -74,6 +76,14 @@ export function Toolbar() {
         Запретить пересечения
       </label>
       <div className="ml-auto flex items-center gap-1.5">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          title={theme === 'dark' ? 'Светлая тема' : 'Тёмная тема'}
+        >
+          {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+        </Button>
         <Button variant="outline" size="sm" onClick={onImport}>
           <Upload className="h-3.5 w-3.5" />
           Загрузить JSON

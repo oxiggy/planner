@@ -22,8 +22,10 @@ export function ScheduledBlock({ block, stackIndex, visibleStartMin }: Props) {
   const updateScheduled = useStore((s) => s.updateScheduled)
   const deleteScheduled = useStore((s) => s.deleteScheduled)
   const resizeScheduled = useStore((s) => s.resizeScheduled)
+  const theme = useStore((s) => s.settings.theme)
 
   const color = getColor(block.color)
+  const textColor = theme === 'dark' ? '#f1f5f9' : color.text
 
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: `scheduled:${block.id}`,
@@ -72,7 +74,7 @@ export function ScheduledBlock({ block, stackIndex, visibleStartMin }: Props) {
         right: 2,
         background: color.bg,
         borderColor: color.border,
-        color: color.text,
+        color: textColor,
         transform: CSS.Translate.toString(transform),
         zIndex,
       }}

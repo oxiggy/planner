@@ -28,9 +28,9 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="flex h-full w-72 shrink-0 flex-col border-r border-slate-200 bg-white">
-      <div className="border-b border-slate-200 p-3">
-        <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+    <aside className="flex h-full w-72 shrink-0 flex-col border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+      <div className="border-b border-slate-200 p-3 dark:border-slate-800">
+        <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
           Задачи
         </div>
         <div className="flex flex-col gap-1.5">
@@ -46,7 +46,7 @@ export function Sidebar() {
       </div>
       <div className="scrollbar-thin flex-1 space-y-1 overflow-y-auto p-2">
         {templates.length === 0 && (
-          <div className="px-2 py-8 text-center text-xs text-slate-400">
+          <div className="px-2 py-8 text-center text-xs text-slate-400 dark:text-slate-500">
             Пока пусто.<br />Нажмите «Добавить задачу».
           </div>
         )}
@@ -54,7 +54,7 @@ export function Sidebar() {
           <TemplateItem key={t.id} task={t} />
         ))}
       </div>
-      <div className="flex items-center gap-1.5 border-t border-slate-200 p-2">
+      <div className="flex items-center gap-1.5 border-t border-slate-200 p-2 dark:border-slate-800">
         <Button variant="ghost" size="xs" onClick={onImport} className="flex-1">
           <Upload className="h-3.5 w-3.5" />
           Загрузить JSON

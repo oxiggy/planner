@@ -6,6 +6,7 @@ import {
   type DragEndEvent,
   type DragMoveEvent,
 } from '@dnd-kit/core'
+import { useEffect } from 'react'
 import { Toolbar } from './components/Toolbar'
 import { Sidebar } from './components/Sidebar'
 import { DayGrid } from './components/DayGrid'
@@ -91,6 +92,13 @@ export default function App() {
   const moveScheduled = useStore((s) => s.moveScheduled)
   const reorderTemplate = useStore((s) => s.reorderTemplate)
   const setDragPreview = useStore((s) => s.setDragPreview)
+  const theme = useStore((s) => s.settings.theme)
+
+  useEffect(() => {
+    const root = document.documentElement
+    root.classList.toggle('dark', theme === 'dark')
+    root.style.colorScheme = theme
+  }, [theme])
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
