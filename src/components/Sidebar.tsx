@@ -89,10 +89,12 @@ export function Sidebar() {
 
   return (
     <aside
-      style={{ width: collapsed ? 40 : 288 }}
-      className="relative flex h-full shrink-0 overflow-hidden border-r border-slate-200 bg-white transition-[width] duration-300 ease-in-out dark:border-slate-800 dark:bg-slate-900"
+      className={cn(
+        'relative flex h-full shrink-0 overflow-hidden border-r border-slate-200 bg-white transition-[width] duration-300 ease-in-out dark:border-slate-800 dark:bg-slate-900',
+        collapsed ? 'w-10' : 'w-72 lg:w-[400px]',
+      )}
     >
-      <div className="flex h-full w-72 flex-col">
+      <div className="flex h-full w-72 flex-col lg:w-[400px]">
         <div className="border-b border-slate-200 p-3 dark:border-slate-800">
           <div className="mb-2 flex items-center gap-2">
             <Button
