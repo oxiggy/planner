@@ -31,6 +31,8 @@ const slotDurations = [
   { label: '30 минут', minutes: 30 },
   { label: '1 час', minutes: 60 },
   { label: '2 часа', minutes: 120 },
+  { label: '3 часа', minutes: 180 },
+  { label: '4 часа', minutes: 240 },
   { label: '5 часов', minutes: 300 },
 ]
 

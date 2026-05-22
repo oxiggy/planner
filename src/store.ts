@@ -3,7 +3,7 @@ import type { PlannerState, ScheduledTask, Task, Theme } from './types'
 import { DEFAULT_COLOR, DEFAULT_SLOT_COLOR } from './lib/constants'
 import { loadState, saveState } from './lib/storage'
 import { uid } from './lib/utils'
-import { snapToSlot, todayStr } from './lib/time'
+import { addDays, snapToSlot, todayStr } from './lib/time'
 
 export type DragPreview = {
   date: string
@@ -379,24 +379,45 @@ export const useStore = create<Store>((set, get) => {
     },
 
     addSlotToToday(durationMin = 60) {
-      const today = todayStr()
-      const dur = Math.max(15, snapToSlot(durationMin))
       const s = get()
-      const now = new Date()
-      let baseMin = now.getHours() * 60 + now.getMinutes()
-      if (baseMin < 9 * 60) baseMin = 9 * 60
-      baseMin = snapToSlot(baseMin)
-      for (let m = baseMin; m + dur <= 1440; m += 15) {
-        if (!conflictsWith(s.scheduled, today, m, dur)) {
-          get().addScheduled({
-            title: '',
-            color: DEFAULT_SLOT_COLOR,
-            date: today,
-            startMin: m,
-            durationMin: dur,
-          })
-          return
+      const dur = Math.max(15, snapToSlot(durationMin))
+      const today = todayStr()
+
+      // Первый день для попытки: первый видимый день, но не раньше сегодняшнего.
+      // Когда startDate в прошлом, DayGrid сдвигает видимое окно вперёд и заканчивает
+      // его на (startDay + dayCount - 1). Используем ту же логику, чтобы слот мог
+      // попасть на любой видимый день, включая последний.
+      const startDay = s.startDate > today ? s.startDate : today
+      const lastDay = addDays(startDay, s.dayCount - 1)
+
+      // Часы дня берём из настроек (а не из временного showAllHours):
+      // слоты всегда укладываются в «рабочий» промежуток дня.
+      const dayMin = s.settings.dayStartHour * 60
+      const dayMax = (s.settings.dayEndHour + 1) * 60
+
+      let currentDate = startDay
+      while (currentDate <= lastDay) {
+        let baseMin = dayMin
+        if (currentDate === today) {
+          const now = new Date()
+          const nowMin = now.getHours() * 60 + now.getMinutes()
+          baseMin = Math.max(baseMin, snapToSlot(nowMin))
         }
+
+        for (let m = baseMin; m + dur <= dayMax; m += 15) {
+          if (!conflictsWith(s.scheduled, currentDate, m, dur)) {
+            get().addScheduled({
+              title: '',
+              color: DEFAULT_SLOT_COLOR,
+              date: currentDate,
+              startMin: m,
+              durationMin: dur,
+            })
+            return
+          }
+        }
+
+        currentDate = addDays(currentDate, 1)
       }
     },
   }
