@@ -31,6 +31,8 @@ import {
   ChevronRight,
   Settings,
   Trash2,
+  Menu,
+  Check,
 } from 'lucide-react'
 import { download, pickFile, readFile, type PlannerExport } from '@/lib/json-io'
 import { cn } from '@/lib/utils'
@@ -235,75 +237,77 @@ export function Toolbar() {
       <div className="flex items-center gap-2 font-semibold text-slate-900 dark:text-slate-100">
         <span>Planner</span>
       </div>
-      <div className="flex items-center gap-2">
-        <TooltipProvider delayDuration={250}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div>
-                <HeaderDatePicker value={startDate} onChange={setStartDate} />
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>{startDateLabel}</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-        <TooltipProvider delayDuration={250}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Input
-                type="number"
-                min={1}
-                max={60}
-                value={dayCount}
-                onChange={(e) => setDayCount(Number(e.target.value))}
-                aria-label={dayCountLabel}
-                className="h-8 w-[104px]"
-              />
-            </TooltipTrigger>
-            <TooltipContent>{dayCountLabel}</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      </div>
-      <TooltipProvider delayDuration={250}>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              aria-label={preventOverlapLabel}
-              aria-pressed={preventOverlap}
-              onClick={() => setPreventOverlap(!preventOverlap)}
-              className="ml-1 text-slate-600 dark:text-slate-400"
-            >
-              <span className="relative grid h-4 w-4 place-items-center" aria-hidden="true">
-                <LayoutTemplate className="h-4 w-4" />
-                {preventOverlap && (
-                  <span className="absolute h-[1.5px] w-5 rotate-45 rounded-full bg-current" />
-                )}
-              </span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>{preventOverlapLabel}</TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-      <div className="ml-auto flex items-center gap-1.5">
+
+      {/* Desktop toolbar — >= lg */}
+      <div className="hidden flex-1 items-center gap-3 lg:flex">
+        <div className="flex items-center gap-2">
+          <TooltipProvider delayDuration={250}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div>
+                  <HeaderDatePicker value={startDate} onChange={setStartDate} />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>{startDateLabel}</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider delayDuration={250}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Input
+                  type="number"
+                  min={1}
+                  max={60}
+                  value={dayCount}
+                  onChange={(e) => setDayCount(Number(e.target.value))}
+                  aria-label={dayCountLabel}
+                  className="h-8 w-[104px]"
+                />
+              </TooltipTrigger>
+              <TooltipContent>{dayCountLabel}</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
         <TooltipProvider delayDuration={250}>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
+                type="button"
                 variant="ghost"
                 size="icon"
-                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                aria-label={themeLabel}
-                title={theme === 'dark' ? 'Светлая тема' : 'Тёмная тема'}
+                aria-label={preventOverlapLabel}
+                aria-pressed={preventOverlap}
+                onClick={() => setPreventOverlap(!preventOverlap)}
+                className="ml-1 text-slate-600 dark:text-slate-400"
               >
-                {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                <span className="relative grid h-4 w-4 place-items-center" aria-hidden="true">
+                  <LayoutTemplate className="h-4 w-4" />
+                  {preventOverlap && (
+                    <span className="absolute h-[1.5px] w-5 rotate-45 rounded-full bg-current" />
+                  )}
+                </span>
               </Button>
             </TooltipTrigger>
-            <TooltipContent>{themeLabel}</TooltipContent>
+            <TooltipContent>{preventOverlapLabel}</TooltipContent>
           </Tooltip>
         </TooltipProvider>
-        <AlertDialog open={clearTarget !== null} onOpenChange={(open) => !open && setClearTarget(null)}>
+        <div className="ml-auto flex items-center gap-1.5">
+          <TooltipProvider delayDuration={250}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                  aria-label={themeLabel}
+                  title={theme === 'dark' ? 'Светлая тема' : 'Тёмная тема'}
+                >
+                  {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{themeLabel}</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           <DropdownMenu>
             <TooltipProvider delayDuration={250}>
               <Tooltip>
@@ -328,28 +332,120 @@ export function Toolbar() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>{clearDialog.title}</AlertDialogTitle>
-              <AlertDialogDescription>{clearDialog.description}</AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Отмена</AlertDialogCancel>
-              <AlertDialogAction onClick={onConfirmClear}>
-                Очистить
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-        <Button variant="outline" size="sm" onClick={onImport}>
-          <Upload className="h-3.5 w-3.5" />
-          Загрузить JSON
-        </Button>
-        <Button variant="outline" size="sm" onClick={onExport}>
-          <Download className="h-3.5 w-3.5" />
-          Выгрузить JSON
-        </Button>
+          <Button variant="outline" size="sm" onClick={onImport}>
+            <Upload className="h-3.5 w-3.5" />
+            Загрузить JSON
+          </Button>
+          <Button variant="outline" size="sm" onClick={onExport}>
+            <Download className="h-3.5 w-3.5" />
+            Выгрузить JSON
+          </Button>
+        </div>
       </div>
+
+      {/* Mobile / tablet menu — < lg */}
+      <div className="ml-auto lg:hidden">
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="ghost" size="icon" aria-label="Меню">
+              <Menu className="h-5 w-5" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="end" collisionPadding={8} className="w-80 space-y-3">
+            <div className="space-y-1.5">
+              <div className="text-xs font-medium text-slate-600 dark:text-slate-300">
+                {startDateLabel}
+              </div>
+              <div className="[&_button]:h-9 [&_button]:w-full [&_button]:justify-start">
+                <HeaderDatePicker value={startDate} onChange={setStartDate} />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <div className="text-xs font-medium text-slate-600 dark:text-slate-300">
+                {dayCountLabel}
+              </div>
+              <Input
+                type="number"
+                min={1}
+                max={60}
+                value={dayCount}
+                onChange={(e) => setDayCount(Number(e.target.value))}
+                aria-label={dayCountLabel}
+                className="h-9 w-full"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5 border-t border-slate-200 pt-2 dark:border-slate-800">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setPreventOverlap(!preventOverlap)}
+                aria-pressed={preventOverlap}
+                className="justify-start"
+              >
+                <LayoutTemplate className="h-4 w-4" />
+                {preventOverlapLabel}
+                {preventOverlap && <Check className="ml-auto h-3.5 w-3.5" />}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                className="justify-start"
+              >
+                {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                {themeLabel}
+              </Button>
+            </div>
+            <div className="flex flex-col gap-1.5 border-t border-slate-200 pt-2 dark:border-slate-800">
+              <Button variant="outline" size="sm" onClick={onImport} className="justify-start">
+                <Upload className="h-3.5 w-3.5" />
+                Загрузить JSON
+              </Button>
+              <Button variant="outline" size="sm" onClick={onExport} className="justify-start">
+                <Download className="h-3.5 w-3.5" />
+                Выгрузить JSON
+              </Button>
+            </div>
+            <div className="flex flex-col gap-1.5 border-t border-slate-200 pt-2 dark:border-slate-800">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setClearTarget('tasks')}
+                className="justify-start text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/30 dark:hover:text-red-300"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                Очистить задачи
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setClearTarget('planner')}
+                className="justify-start text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/30 dark:hover:text-red-300"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                Очистить планнер
+              </Button>
+            </div>
+          </PopoverContent>
+        </Popover>
+      </div>
+
+      {/* Clear confirmation dialog — shared by both desktop and mobile triggers */}
+      <AlertDialog
+        open={clearTarget !== null}
+        onOpenChange={(open) => !open && setClearTarget(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{clearDialog.title}</AlertDialogTitle>
+            <AlertDialogDescription>{clearDialog.description}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Отмена</AlertDialogCancel>
+            <AlertDialogAction onClick={onConfirmClear}>Очистить</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </header>
   )
 }
