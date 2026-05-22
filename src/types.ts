@@ -28,6 +28,8 @@ export type Settings = {
   showAllHours: boolean
   theme: Theme
   sidebarCollapsed: boolean
+  dayStartHour: number // 0..23 — первый видимый час дня
+  dayEndHour: number // 0..23 — последний видимый час дня (включительно)
 }
 
 export type PlannerState = {

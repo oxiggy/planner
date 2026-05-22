@@ -11,12 +11,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useStore } from '@/store'
@@ -70,6 +64,54 @@ function getCalendarDays(month: Date) {
     date.setDate(start.getDate() + i)
     return date
   })
+}
+
+function HourRangeSelector() {
+  const dayStartHour = useStore((s) => s.settings.dayStartHour)
+  const dayEndHour = useStore((s) => s.settings.dayEndHour)
+  const setDayStartHour = useStore((s) => s.setDayStartHour)
+  const setDayEndHour = useStore((s) => s.setDayEndHour)
+
+  const selectClass =
+    'h-9 flex-1 rounded-md border border-slate-300 bg-white px-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100'
+
+  return (
+    <div className="space-y-1.5">
+      <div className="text-xs font-medium text-slate-600 dark:text-slate-300">
+        Часы дня
+      </div>
+      <div className="flex items-center gap-2">
+        <select
+          value={dayStartHour}
+          onChange={(e) => setDayStartHour(Number(e.target.value))}
+          aria-label="Начало дня"
+          className={selectClass}
+        >
+          {Array.from({ length: 24 }, (_, i) => (
+            <option key={i} value={i}>
+              {i.toString().padStart(2, '0')}:00
+            </option>
+          ))}
+        </select>
+        <span className="text-xs text-slate-500 dark:text-slate-400">—</span>
+        <select
+          value={dayEndHour}
+          onChange={(e) => setDayEndHour(Number(e.target.value))}
+          aria-label="Конец дня"
+          className={selectClass}
+        >
+          {Array.from({ length: 24 }, (_, i) => (
+            <option key={i} value={i}>
+              {i.toString().padStart(2, '0')}:00
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="text-[10px] text-slate-500 dark:text-slate-400">
+        Скрытые часы можно временно показать кнопкой в шкале времени.
+      </div>
+    </div>
+  )
 }
 
 function HeaderDatePicker({
@@ -308,30 +350,43 @@ export function Toolbar() {
               <TooltipContent>{themeLabel}</TooltipContent>
             </Tooltip>
           </TooltipProvider>
-          <DropdownMenu>
+          <Popover>
             <TooltipProvider delayDuration={250}>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <DropdownMenuTrigger asChild>
+                  <PopoverTrigger asChild>
                     <Button variant="ghost" size="icon" aria-label={settingsLabel}>
                       <Settings className="h-4 w-4" />
                     </Button>
-                  </DropdownMenuTrigger>
+                  </PopoverTrigger>
                 </TooltipTrigger>
                 <TooltipContent>{settingsLabel}</TooltipContent>
               </Tooltip>
             </TooltipProvider>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onSelect={() => setClearTarget('tasks')}>
-                <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
-                Очистить задачи
-              </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => setClearTarget('planner')}>
-                <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
-                Очистить планнер
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            <PopoverContent align="end" className="w-72 space-y-3">
+              <HourRangeSelector />
+              <div className="flex flex-col gap-1.5 border-t border-slate-200 pt-2 dark:border-slate-800">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setClearTarget('tasks')}
+                  className="justify-start text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/30 dark:hover:text-red-300"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  Очистить задачи
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setClearTarget('planner')}
+                  className="justify-start text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/30 dark:hover:text-red-300"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  Очистить планнер
+                </Button>
+              </div>
+            </PopoverContent>
+          </Popover>
           <Button variant="outline" size="sm" onClick={onImport}>
             <Upload className="h-3.5 w-3.5" />
             Загрузить JSON
@@ -373,6 +428,9 @@ export function Toolbar() {
                 aria-label={dayCountLabel}
                 className="h-9 w-full"
               />
+            </div>
+            <div className="border-t border-slate-200 pt-3 dark:border-slate-800">
+              <HourRangeSelector />
             </div>
             <div className="flex flex-col gap-1.5 border-t border-slate-200 pt-2 dark:border-slate-800">
               <Button

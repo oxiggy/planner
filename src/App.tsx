@@ -52,7 +52,10 @@ function computeTarget(
     | { type?: string; blockId?: string; templateId?: string }
     | undefined
   const state = useStore.getState()
-  const visibleStartMin = getVisibleStartMin(state.settings.showAllHours)
+  const visibleStartMin = getVisibleStartMin(
+    state.settings.showAllHours,
+    state.settings.dayStartHour,
+  )
 
   if (activeData?.type === 'template' && activeData.templateId) {
     const tpl = state.templates.find((t) => t.id === activeData.templateId)

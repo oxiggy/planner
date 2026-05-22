@@ -25,6 +25,8 @@ type Store = PlannerState & {
   setShowAllHours: (b: boolean) => void
   setTheme: (t: Theme) => void
   setSidebarCollapsed: (b: boolean) => void
+  setDayStartHour: (h: number) => void
+  setDayEndHour: (h: number) => void
 
   addTemplate: (init?: Partial<Task>) => Task
   updateTemplate: (id: string, patch: Partial<Task>) => void
@@ -80,6 +82,8 @@ function defaultState(): PlannerState {
       showAllHours: false,
       theme: 'light',
       sidebarCollapsed: false,
+      dayStartHour: 9,
+      dayEndHour: 23,
     },
   }
 }
@@ -147,6 +151,30 @@ export const useStore = create<Store>((set, get) => {
     },
     setSidebarCollapsed(b) {
       set((state) => ({ settings: { ...state.settings, sidebarCollapsed: b } }))
+      persist()
+    },
+    setDayStartHour(h) {
+      const startHour = Math.max(0, Math.min(23, Math.round(h)))
+      set((state) => ({
+        settings: {
+          ...state.settings,
+          dayStartHour: startHour,
+          // Подтягиваем end, если start ушёл выше него.
+          dayEndHour: Math.max(startHour, state.settings.dayEndHour),
+        },
+      }))
+      persist()
+    },
+    setDayEndHour(h) {
+      const endHour = Math.max(0, Math.min(23, Math.round(h)))
+      set((state) => ({
+        settings: {
+          ...state.settings,
+          dayEndHour: endHour,
+          // Подтягиваем start, если end ушёл ниже него.
+          dayStartHour: Math.min(endHour, state.settings.dayStartHour),
+        },
+      }))
       persist()
     },
 

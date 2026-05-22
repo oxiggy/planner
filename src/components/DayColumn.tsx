@@ -6,8 +6,8 @@ import {
   HEADER_HEIGHT,
   HOUR_HEIGHT,
   MIN_HEIGHT,
-  VISIBLE_END_HOUR,
   getColor,
+  getVisibleEndMin,
   getVisibleStartMin,
 } from '@/lib/constants'
 import { formatDayHeader, formatHM, isToday } from '@/lib/time'
@@ -20,10 +20,12 @@ type Props = { date: string }
 export function DayColumn({ date }: Props) {
   const scheduled = useStore((s) => s.scheduled)
   const showAllHours = useStore((s) => s.settings.showAllHours)
+  const dayStartHour = useStore((s) => s.settings.dayStartHour)
+  const dayEndHour = useStore((s) => s.settings.dayEndHour)
   const dragCopySourceId = useStore((s) => s.dragCopySourceId)
-  const visibleStartMin = getVisibleStartMin(showAllHours)
-  const visibleStartHour = visibleStartMin / 60
-  const hoursCount = VISIBLE_END_HOUR - visibleStartHour
+  const visibleStartMin = getVisibleStartMin(showAllHours, dayStartHour)
+  const visibleEndMin = getVisibleEndMin(showAllHours, dayEndHour)
+  const hoursCount = (visibleEndMin - visibleStartMin) / 60
   const dayHeight = hoursCount * HOUR_HEIGHT
 
   const blocks = useMemo(

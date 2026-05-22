@@ -7,7 +7,7 @@ import {
   GUTTER_WIDTH,
   HEADER_HEIGHT,
   HOUR_HEIGHT,
-  VISIBLE_END_HOUR,
+  getVisibleEndMin,
   getVisibleStartMin,
 } from '@/lib/constants'
 import { DayColumn } from './DayColumn'
@@ -19,6 +19,8 @@ export function DayGrid() {
   const dayCount = useStore((s) => s.dayCount)
   const showAllHours = useStore((s) => s.settings.showAllHours)
   const setShowAllHours = useStore((s) => s.setShowAllHours)
+  const dayStartHour = useStore((s) => s.settings.dayStartHour)
+  const dayEndHour = useStore((s) => s.settings.dayEndHour)
   const showPastDays = useStore((s) => s.showPastDays)
   const setShowPastDays = useStore((s) => s.setShowPastDays)
 
@@ -33,11 +35,15 @@ export function DayGrid() {
     [visibleStartDate, visibleDayCount],
   )
 
-  const visibleStartMin = getVisibleStartMin(showAllHours)
+  const visibleStartMin = getVisibleStartMin(showAllHours, dayStartHour)
+  const visibleEndMin = getVisibleEndMin(showAllHours, dayEndHour)
   const visibleStartHour = visibleStartMin / 60
-  const hoursCount = VISIBLE_END_HOUR - visibleStartHour
+  const visibleEndHour = visibleEndMin / 60
+  const hoursCount = visibleEndHour - visibleStartHour
   const dayHeight = hoursCount * HOUR_HEIGHT
-  const hoursToggleLabel = showAllHours ? 'Скрыть ранние часы' : 'Показать остальные часы'
+  const hoursToggleLabel = showAllHours
+    ? 'Свернуть до настроенных часов'
+    : 'Показать все 24 часа'
   const pastDaysToggleLabel = showPastDays ? 'Скрыть прошлые дни' : 'Показать прошлые дни'
 
   return (
@@ -100,12 +106,12 @@ export function DayGrid() {
           <div className="relative" style={{ height: dayHeight }}>
             {Array.from({ length: hoursCount + 1 }).map((_, i) => {
               const h = visibleStartHour + i
-              if (h > VISIBLE_END_HOUR) return null
+              if (h > visibleEndHour) return null
               return (
                 <div
                   key={h}
                   className="absolute left-0 right-0 select-none px-1 text-[10px] text-slate-500 dark:text-slate-400"
-                  style={{ top: i * HOUR_HEIGHT - 6 }}
+                  style={{ top: i === 0 ? 4 : i * HOUR_HEIGHT - 6 }}
                 >
                   {h.toString().padStart(2, '0')}:00
                 </div>

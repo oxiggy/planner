@@ -7,11 +7,21 @@ export const DAY_COL_WIDTH = 220
 export const GUTTER_WIDTH = 56
 export const HEADER_HEIGHT = 44
 
-export const COMPACT_START_HOUR = 9
-export const VISIBLE_END_HOUR = 24
+export const DEFAULT_DAY_START_HOUR = 9
+export const DEFAULT_DAY_END_HOUR = 23
 
-export function getVisibleStartMin(showAllHours: boolean): number {
-  return showAllHours ? 0 : COMPACT_START_HOUR * 60
+export function getVisibleStartMin(
+  showAllHours: boolean,
+  dayStartHour: number = DEFAULT_DAY_START_HOUR,
+): number {
+  return showAllHours ? 0 : dayStartHour * 60
+}
+
+export function getVisibleEndMin(
+  showAllHours: boolean,
+  dayEndHour: number = DEFAULT_DAY_END_HOUR,
+): number {
+  return showAllHours ? 1440 : (dayEndHour + 1) * 60
 }
 
 export type ColorDef = {
