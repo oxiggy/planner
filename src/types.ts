@@ -27,6 +27,7 @@ export type Settings = {
   preventOverlap: boolean
   showAllHours: boolean
   theme: Theme
+  sidebarCollapsed: boolean
 }
 
 export type PlannerState = {
