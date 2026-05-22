@@ -1,9 +1,10 @@
 import { useDraggable } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
-import { X, StickyNote, Pencil, Minus, Plus, ExternalLink } from 'lucide-react'
+import { X, StickyNote, Pencil, Minus, Plus, ExternalLink, ListChecks } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { InlineTitle } from './InlineTitle'
 import { EditPopover } from './EditPopover'
+import { TemplatePicker } from './TemplatePicker'
 import { getColor, MIN_HEIGHT } from '@/lib/constants'
 import { formatHM } from '@/lib/time'
 import { useStore } from '@/store'
@@ -22,6 +23,7 @@ export function ScheduledBlock({ block, stackIndex, visibleStartMin }: Props) {
   const updateScheduled = useStore((s) => s.updateScheduled)
   const deleteScheduled = useStore((s) => s.deleteScheduled)
   const resizeScheduled = useStore((s) => s.resizeScheduled)
+  const applyTemplateToScheduled = useStore((s) => s.applyTemplateToScheduled)
   const theme = useStore((s) => s.settings.theme)
 
   const color = getColor(block.color)
@@ -121,6 +123,19 @@ export function ScheduledBlock({ block, stackIndex, visibleStartMin }: Props) {
                 </button>
               </>
             )}
+            <TemplatePicker
+              currentTemplateId={block.templateId}
+              onSelect={(tplId) => applyTemplateToScheduled(block.id, tplId)}
+              trigger={
+                <button
+                  title="Выбрать задачу"
+                  onPointerDown={(e) => e.stopPropagation()}
+                  className="rounded p-0.5 hover:bg-black/10"
+                >
+                  <ListChecks className="h-3 w-3" />
+                </button>
+              }
+            />
             <EditPopover
               trigger={
                 <button

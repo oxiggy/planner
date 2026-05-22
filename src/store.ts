@@ -41,6 +41,7 @@ type Store = PlannerState & {
   moveScheduled: (id: string, date: string, startMin: number) => boolean
   copyScheduled: (id: string, date: string, startMin: number) => ScheduledTask | null
   resizeScheduled: (id: string, durationMin: number) => boolean
+  applyTemplateToScheduled: (scheduledId: string, templateId: string) => boolean
   clearTemplates: () => void
   clearPlanner: () => void
 
@@ -212,6 +213,30 @@ export const useStore = create<Store>((set, get) => {
         scheduled: state.scheduled.map((b) => (b.id === id ? { ...b, ...patch } : b)),
       }))
       persist()
+    },
+
+    applyTemplateToScheduled(scheduledId, templateId) {
+      const s = get()
+      const block = s.scheduled.find((b) => b.id === scheduledId)
+      const tpl = s.templates.find((t) => t.id === templateId)
+      if (!block || !tpl) return false
+      set((state) => ({
+        scheduled: state.scheduled.map((b) =>
+          b.id === scheduledId
+            ? {
+                ...b,
+                templateId: tpl.id,
+                title: tpl.title,
+                emoji: tpl.emoji,
+                color: tpl.color,
+                note: tpl.note,
+                noteLink: tpl.noteLink,
+              }
+            : b,
+        ),
+      }))
+      persist()
+      return true
     },
 
     deleteScheduled(id) {
