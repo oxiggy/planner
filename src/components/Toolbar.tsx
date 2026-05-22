@@ -12,6 +12,13 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useStore } from '@/store'
 import {
@@ -72,8 +79,10 @@ function HourRangeSelector() {
   const setDayStartHour = useStore((s) => s.setDayStartHour)
   const setDayEndHour = useStore((s) => s.setDayEndHour)
 
-  const selectClass =
-    'h-9 flex-1 rounded-md border border-slate-300 bg-white px-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100'
+  const hourOptions = Array.from({ length: 24 }, (_, i) => ({
+    value: String(i),
+    label: `${i.toString().padStart(2, '0')}:00`,
+  }))
 
   return (
     <div className="space-y-1.5">
@@ -81,31 +90,37 @@ function HourRangeSelector() {
         Часы дня
       </div>
       <div className="flex items-center gap-2">
-        <select
-          value={dayStartHour}
-          onChange={(e) => setDayStartHour(Number(e.target.value))}
-          aria-label="Начало дня"
-          className={selectClass}
+        <Select
+          value={String(dayStartHour)}
+          onValueChange={(v) => setDayStartHour(Number(v))}
         >
-          {Array.from({ length: 24 }, (_, i) => (
-            <option key={i} value={i}>
-              {i.toString().padStart(2, '0')}:00
-            </option>
-          ))}
-        </select>
+          <SelectTrigger aria-label="Начало дня" className="flex-1">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {hourOptions.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <span className="text-xs text-slate-500 dark:text-slate-400">—</span>
-        <select
-          value={dayEndHour}
-          onChange={(e) => setDayEndHour(Number(e.target.value))}
-          aria-label="Конец дня"
-          className={selectClass}
+        <Select
+          value={String(dayEndHour)}
+          onValueChange={(v) => setDayEndHour(Number(v))}
         >
-          {Array.from({ length: 24 }, (_, i) => (
-            <option key={i} value={i}>
-              {i.toString().padStart(2, '0')}:00
-            </option>
-          ))}
-        </select>
+          <SelectTrigger aria-label="Конец дня" className="flex-1">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {hourOptions.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       <div className="text-[10px] text-slate-500 dark:text-slate-400">
         Скрытые часы можно временно показать кнопкой в шкале времени.
